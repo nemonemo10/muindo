@@ -2,167 +2,117 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<!-- 🔒 레이아웃/글자폭 고정: 가로폭 760px로 고정 -->
 <meta name="viewport" content="width=760, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"/>
 <title>무인도에서 살아남기</title>
 <style>
-  /* 🔒 전역 폰트 비율 완전 고정 */
-  html, body {
-    -webkit-text-size-adjust: none;
-    -moz-text-size-adjust: none;
-    -ms-text-size-adjust: none;
-    text-size-adjust: none;
-  }
-  * { box-sizing: border-box; }
+  html, body { -webkit-text-size-adjust:none; -moz-text-size-adjust:none; -ms-text-size-adjust:none; text-size-adjust:none; }
+  /* ✅ 전역 중앙 정렬 */
+  * { box-sizing: border-box; text-align: center; }
 
   body {
-    width: 760px;           /* 레이아웃 폭 고정 */
-    margin: 0 auto;
+    width: 760px; margin: 0 auto;
     font-family: "Noto Sans KR", sans-serif;
-    background: #dff9fb;
-    transition: background-color .6s ease;
-    text-align: center;
+    background: #dff9fb; transition: background-color .6s ease;
     padding: 30px;
-    font-size: 16px;
-    line-height: 1.4;
-    overflow-x: hidden;
+    font-size: 16px; line-height: 1.4; overflow-x: hidden;
   }
-
   h1 { font-size: 28px; line-height: 1.2; }
 
+  /* ✅ 로그 박스도 글자/박스 모두 중앙 */
   #log {
-    border: 2px solid #333;
-    border-radius: 10px;
-    background: #fff;
-    height: 350px;
-    width: 760px;      /* 폭 고정 */
-    max-width: 760px;
-    min-width: 760px;
-    margin: 18px auto;
-    padding: 15px;
-    overflow-y: auto;
-    text-align: left;
-    font-size: 16px;
-    line-height: 1.5;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    border: 2px solid #333; border-radius: 10px; background: #fff;
+    height: 350px; width: 760px; margin: 18px auto; padding: 15px;
+    overflow-y: auto; font-size: 16px; line-height: 1.5;
+    word-wrap: break-word; overflow-wrap: break-word;
   }
 
   button {
-    margin: 6px;
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: none;
-    background: #74b9ff;
-    color: #fff;
-    font-size: 16px;
-    line-height: 1.2;
-    cursor: pointer;
+    margin: 6px; padding: 10px 18px; border-radius: 8px; border: none;
+    background: #74b9ff; color: #fff; font-size: 16px; line-height: 1.2; cursor: pointer;
   }
   button:disabled { opacity: .6; cursor: not-allowed; }
-
   #weatherDisplay { font-size: 22px; margin-top: 14px; }
 
-  /* 💬 중앙 메시지 팝업 (폭 고정) */
+  /* 중앙 메시지 팝업(알림) - 컴팩트 */
   #centerMessage {
-    position: fixed;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 760px;      /* 팝업 폭 고정 */
-    max-width: 760px;
-    min-width: 760px;
-    font-size: 32px;
-    line-height: 1.3;
+    position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%);
+    width: 420px;
+    font-size: 20px;
+    line-height: 1.28;
     font-weight: 700;
     display: none;
     background: rgba(255,255,255,.95);
-    padding: 25px 50px;
-    border-radius: 16px;
+    padding: 10px 16px;
+    border-radius: 12px;
     z-index: 999;
-    box-shadow: 0 0 20px rgba(0,0,0,.2);
+    box-shadow: 0 0 16px rgba(0,0,0,.18);
     word-wrap: break-word;
   }
 
   .highlight { font-weight: 700; color: #0984e3; }
 
-  /* 인벤토리/도구/음식 바 컨테이너 (폭 고정) */
-  #inventoryWrap {
-    width: 760px;
-    max-width: 760px;
-    min-width: 760px;
-    margin: 0 auto;
-  }
-
+  #inventoryWrap { width: 760px; margin: 0 auto; }
   #inventory, #toolsBar, #madeBar {
-    width: 760px;
-    max-width: 760px;
-    min-width: 760px;
-    margin-top: 12px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    transition: opacity .3s ease;
+    width: 760px; margin-top: 12px; display: flex; flex-wrap: wrap;
+    justify-content: center; gap: 6px; transition: opacity .3s ease;
   }
-
   .title-chip {
-    background: #fff;
-    border: 1px solid #ccc;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 16px;
+    background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px;
+    font-weight: 700; font-size: 16px;
   }
-
   .item-box {
-    background: #fff;
-    border: 1px solid #ccc;
-    padding: 6px 10px;
-    border-radius: 6px;
-    user-select: none;
-    cursor: pointer;
-    transition: all .2s ease;
-    opacity: 1;
-    font-size: 15px;
+    background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px;
+    user-select: none; cursor: pointer; transition: all .2s ease; opacity: 1; font-size: 15px;
   }
   .item-box.dimmed { opacity: .35; }
   .item-box.selected { outline: 3px solid #ff7675; opacity: 1; font-weight: 700; }
-
   #cancelModeBtn { background: #b2bec3; }
 
-  /* 💬 모든 팝업 공통 (폭 고정) */
+  /* 모든 흰색 팝업 공통 - 컴팩트 */
   .popup {
-    position: fixed;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 760px;    /* 팝업 폭 고정 */
-    max-width: 760px;
-    min-width: 760px;
-    background: rgba(255,255,255,.98);
-    padding: 30px 50px;
-    border-radius: 20px;
-    box-shadow: 0 0 25px rgba(0,0,0,.25);
-    font-size: 26px;      /* 고정 */
-    line-height: 1.4;     /* 고정 */
-    font-weight: bold;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    z-index: 1001;
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 420px; background: rgba(255,255,255,.98); padding: 18px 24px;
+    border-radius: 14px; box-shadow: 0 0 18px rgba(0,0,0,.25);
+    font-size: 20px; line-height: 1.4; font-weight: bold;
+    display: none; flex-direction: column; align-items: center; gap: 10px; z-index: 1001;
     word-wrap: break-word;
   }
-  .popup .btn-row { display: flex; gap: 10px; }
-  .popup button { font-size: 18px; line-height: 1.2; padding: 8px 20px; }
-  .popup small { font-size: 14px; line-height: 1.3; }
+  .popup .btn-row { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+  .popup button { font-size: 16px; line-height: 1.2; padding: 8px 16px; border-radius: 6px; }
+  .popup small { font-size: 13px; line-height: 1.3; }
+
+  /* 소개 팝업 글꼴 살짝 작게 */
+  #introPrompt { font-size: 18px; }
+
+  /* 자간 살짝 좁게 */
+  .tight { letter-spacing: -0.03em; }
+
+  /* 도움말 ? 버튼 */
+  #helpBtn{
+    display:none;
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    margin-left: 340px;   /* 760 레이아웃 기준 우측에 붙이기 */
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #ffffff;
+    color:#333;
+    font-weight: 900;
+    box-shadow: 0 2px 10px rgba(0,0,0,.15);
+    cursor: pointer;
+  }
+  #helpBtn:hover{ box-shadow: 0 3px 14px rgba(0,0,0,.2); }
 </style>
 </head>
 <body>
 <h1>🏝️ 무인도에서 살아남기 🏝️</h1>
 <div id="dayDisplay">오늘은 1일 입니다!</div>
 <div id="weatherDisplay">날씨를 결정 중입니다...</div>
+
+<!-- ? 도움말 버튼 (게임 시작 후 표시) -->
+<button id="helpBtn" onclick="openHelp()">?</button>
 
 <div id="inventoryWrap">
   <div id="inventory"><span class="title-chip">🎒 인벤토리:</span></div>
@@ -183,12 +133,53 @@
 <div id="log"></div>
 <div id="centerMessage"></div>
 
+<!-- 소개 팝업 -->
+<div id="introPrompt" class="popup">
+  이 게임은 수험생키우기 확장팩인<br/> 무인도에서 공부하기를 기반으로<br/>
+  만들어진 2차 창작게임입니다.<br/><br/>
+  <b>100일 동안 채집과 낚시를 통해<br/>
+  <b>28개의 요리를 모두 완성하거나<br/>
+  <b>해독제</b>를 만들어 탈출하면 성공입니다!<br/><br/>
+  버그제보와 질문은<br/>
+  <b>수험생키우기 오픈채팅</b>에서<br/>
+  <b>루키뉴비</b>를 찾아주세요.<br/>
+  감사합니다.
+  <div class="btn-row" style="margin-top:10px;">
+    <button onclick="goStartConfirm()">다음</button>
+  </div>
+</div>
+
 <!-- 시작 팝업 -->
 <div id="startPrompt" class="popup">
   무인도에서 생존하기!<br/>게임을 시작할까요?
   <div class="btn-row">
     <button onclick="startGame()">예</button>
     <button onclick="cancelStart()">아니오</button>
+  </div>
+</div>
+
+<!-- 왜요 팝업 (아니오 이후) -->
+<div id="whyPrompt" class="popup">
+  왜요? 왜요? 왜요?<br/>
+  왜 안하세요? 왜요? 왜요?<br/>
+  진짜 안하실거에요? 진짜요? 진짜요? 진짜요?
+  <div class="btn-row">
+    <button onclick="startFromWhy()">게임 시작하기</button>
+  </div>
+</div>
+
+<!-- 게임방법 팝업 -->
+<div id="helpPrompt" class="popup">
+  <div style="font-size:22px; font-weight:800; margin-bottom:6px;">게임방법</div>
+  <div style="font-size:16px; font-weight:600; line-height:1.5;">
+    • 채집/낚시로 재료를 모으고 조합해 요리를 만듭니다.<br/>
+    • 도구 제작: (돌+돌)=돌도끼, (돌+나뭇가지)=새총, (돌+조개껍데기)=버섯칼<br/>
+    • 해독제: 초코파이 + 삐죽삐죽열매<br/>
+    • 100일 안에 28개 요리 완성 또는 해독제 제작 시 성공!<br/>
+    • 캐릭터 이벤트는 턴 소모 없이 발생할 수 있습니다(등장 확률 60%).
+  </div>
+  <div class="btn-row">
+    <button onclick="closeHelp()">닫기</button>
   </div>
 </div>
 
@@ -208,10 +199,11 @@
 /* ======= 상태 ======= */
 let day=1, weather='', inventory={}, gameOver=false, actionInProgress=false, currentMode=null;
 let hasWetChoco=false, hasPpichu=false, started=false, bonusAction=false;
+let hasBear=false; // 백곰을 한 번이라도 만나면 true (벌집 회피 스킬)
 
 /* 🔸 다음 턴부터 열매 등장 허용 플래그 */
-let ppichuEligible = false;          // 현재 턴에서 열매 등장 허용 여부
-let ppichuEligibleNextTurn = false;  // 다음 턴 시작 시 ppichuEligible로 승격
+let ppichuEligible = false;
+let ppichuEligibleNextTurn = false;
 
 /* ======= 상수 ======= */
 const weathers=["☀️ 맑음","🌧️ 비","☁️ 흐림"];
@@ -219,11 +211,11 @@ const weatherColors={"☀️ 맑음":"#ffeaa7","🌧️ 비":"#74b9ff","☁️ �
 const toolNames=["버섯칼","새총","돌도끼"];
 const toolEmojis={ "돌도끼":"🪓", "새총":"🪃", "버섯칼":"🍄" };
 
-/* 레시피 */
+/* 레시피 (삐죽삐죽열매로 교체) */
 const recipes={
   // 도구/해독제
   "돌+돌":"돌도끼","돌+나뭇가지":"새총","돌+조개껍데기":"버섯칼",
-  "초코파이+삐쭉삐쭉열매":"해독제",
+  "초코파이+삐죽삐죽열매":"해독제",
   // 요리
   "해파리+바나나":"해파리바나나절임",
   "코코넛+바나나":"코코바나볶음",
@@ -255,57 +247,61 @@ const recipes={
   "점박이물고기+얼룩무늬물고기":"무늬무늬생선탕"
 };
 
-/* 요리 재료 목록 */
 const cookIngredients = new Set([
   "오징어","해파리","버섯","바나나","코코넛",
   "줄무늬물고기","점박이물고기","얼룩무늬물고기"
 ]);
 
-/* ======= 엘리먼트 & 유틸 ======= */
+/* ======= 엘리먼트 ======= */
 const logDiv=document.getElementById("log"), invDiv=document.getElementById("inventory"),
       toolsBar=document.getElementById("toolsBar"), madeBar=document.getElementById("madeBar"),
       weatherDiv=document.getElementById("weatherDisplay"), dayDiv=document.getElementById("dayDisplay"),
       cancelModeBtn=document.getElementById("cancelModeBtn"), centerMsg=document.getElementById("centerMessage"),
       restartBtn=document.getElementById("restartBtn"), startPrompt=document.getElementById("startPrompt"),
-      notePrompt=document.getElementById("notePrompt");
+      notePrompt=document.getElementById("notePrompt"), introPrompt=document.getElementById("introPrompt"),
+      whyPrompt=document.getElementById("whyPrompt"), helpPrompt=document.getElementById("helpPrompt"),
+      helpBtn=document.getElementById("helpBtn");
 
 function log(t){ logDiv.innerHTML+=`<div>${t}</div>`; logDiv.scrollTop=logDiv.scrollHeight; }
-function showCenterMessage(t,ms=1500){ centerMsg.textContent=t; centerMsg.style.display="block"; setTimeout(()=>centerMsg.style.display="none",ms); }
+
+/* ✅ showCenterMessage는 항상 2초 간 표시되도록 통일 */
+function showCenterMessage(t){
+  centerMsg.textContent=t;
+  centerMsg.style.display="block";
+  setTimeout(()=>centerMsg.style.display="none",2000);
+}
+
 function addItem(n){ inventory[n]=(inventory[n]||0)+1; render(); }
 function removeItem(n,c=1){ if(!inventory[n]) return; inventory[n]-=c; if(inventory[n]<=0) delete inventory[n]; render(); }
 
-/* ======= 제작 가능 판정 ======= */
+/* ======= 도우미 ======= */
 function recipeResult(a,b){ return recipes[`${a}+${b}`] || recipes[`${b}+${a}`] || null; }
 function isToolResult(x){ return x==="돌도끼"||x==="새총"||x==="버섯칼"||x==="해독제"; }
 function isDishResult(x){ return !isToolResult(x) && x!==null; }
+const dishSet = new Set(Object.values(recipes).filter(v=>!isToolResult(v)));
+function getAllDishes(){ return Object.keys(inventory).filter(k=>dishSet.has(k) && inventory[k]>0); }
+function addRandomDish(){ const arr=[...dishSet]; const pick=arr[Math.floor(Math.random()*arr.length)]; addItem(pick); return pick; }
+function addRandomTool(){ const c=["버섯칼","새총","돌도끼"].filter(t=>!inventory[t]); if(!c.length) return null; const t=c[Math.floor(Math.random()*c.length)]; addItem(t); return t; }
 
+/* ======= 제작 가능 판정 ======= */
 function hasPairFor(item, mode){
   const items = Object.entries(inventory).filter(([k,v])=>v>0).map(([k])=>k);
   if(mode==="tool"){
     const toolPairs = [
-      ["돌","돌"], ["돌","나뭇가지"], ["돌","조개껍데기"], ["초코파이","삐쭉삐쭉열매"]
+      ["돌","돌"], ["돌","나뭇가지"], ["돌","조개껍데기"], ["초코파이","삐죽삐죽열매"]
     ];
     for(const [a,b] of toolPairs){
       if(item!==a && item!==b) continue;
       const hasA = (inventory[a]||0), hasB=(inventory[b]||0);
-      if(a===b){
-        if(item===a && hasA>=2){
-          const r=recipeResult(a,b);
-          if(r && (r==="해독제" || !inventory[r])) return true;
-        }
-      } else {
-        if(hasA>0 && hasB>0){
-          const r=recipeResult(a,b);
-          if(r && (r==="해독제" || !inventory[r])) return true;
-        }
-      }
+      if(a===b){ if(item===a && hasA>=2){ const r=recipeResult(a,b); if(r && (r==="해독제" || !inventory[r])) return true; } }
+      else { if(hasA>0 && hasB>0){ const r=recipeResult(a,b); if(r && (r==="해독제" || !inventory[r])) return true; } }
     }
     return false;
   }
   if(mode==="cook"){
     if(!cookIngredients.has(item)) return false;
     for(const other of items){
-      if(other===item) continue; // 같은 재료 2개 금지
+      if(other===item) continue;
       const r=recipeResult(item,other);
       if(r && isDishResult(r)) return true;
     }
@@ -320,7 +316,6 @@ function render(){
   toolsBar.innerHTML='<span class="title-chip">🔧 보유 도구:</span>';
   madeBar.innerHTML='<span class="title-chip">🍽️ 만든 음식:</span>';
 
-  // 도구 바
   ["버섯칼","새총","돌도끼"].forEach(t=>{
     if(inventory[t]){
       const box=document.createElement("span");
@@ -330,8 +325,6 @@ function render(){
     }
   });
 
-  // 만든 음식 바
-  const dishSet = new Set(Object.values(recipes).filter(v=>!isToolResult(v)));
   Object.keys(inventory).forEach(k=>{
     if(dishSet.has(k)){
       const box=document.createElement("span");
@@ -341,7 +334,6 @@ function render(){
     }
   });
 
-  // 인벤토리(모드별 표시)
   const all = Object.keys(inventory).filter(k=>inventory[k]>0);
   let show=[];
   if(currentMode==="tool"){
@@ -369,8 +361,6 @@ function render(){
         if(k==="궁극의필기노트"){ showNotePrompt(); }
         return;
       }
-
-      // 같은 재료 2번 선택(돌+돌) 지원: 이미 선택되어 있고 개수가 2 이상이며 도구모드일 때 즉시 처리
       if(box.classList.contains("selected")){
         if(currentMode==="tool" && (inventory[k]||0) >= 2 && recipeResult(k,k)){
           craftTool(k,k);
@@ -378,7 +368,6 @@ function render(){
         }
         return;
       }
-
       const selectedEls=[...document.querySelectorAll(".item-box.selected")];
       if(selectedEls.length>=2) return;
       box.classList.remove("dimmed");
@@ -398,8 +387,16 @@ function enterToolMode(){ if(gameOver||!started) return; currentMode="tool"; can
 function enterCookMode(){ if(gameOver||!started) return; currentMode="cook"; cancelModeBtn.style.display="inline-block"; render(); }
 function cancelMode(){ currentMode=null; cancelModeBtn.style.display="none"; document.querySelectorAll(".item-box.selected").forEach(n=>n.classList.remove("selected")); render(); }
 
-/* ======= 시작/재시작 ======= */
+/* ======= 소개/시작 팝업 흐름 ======= */
+function introPromptShow(){ introPrompt.style.display="flex"; }
+function goStartConfirm(){ introPrompt.style.display="none"; startPromptShow(); }
 function startPromptShow(){ startPrompt.style.display="flex"; }
+
+/* ======= 도움말 열고/닫기 ======= */
+function openHelp(){ helpPrompt.style.display='flex'; }
+function closeHelp(){ helpPrompt.style.display='none'; }
+
+/* ======= 시작/재시작 ======= */
 function startGame(){
   startPrompt.style.display="none";
   started = true;
@@ -408,32 +405,44 @@ function startGame(){
   log(`[1일차] 새로운 하루가 시작됩니다.`);
   setWeather(()=>{ sunnyAutoDry(); });
   render();
+  helpBtn.style.display='inline-block';
 }
-function cancelStart(){ showCenterMessage("게임을 시작하지 않았습니다.", 1500); }
+function startFromWhy(){
+  whyPrompt.style.display="none";
+  startGame();
+}
+function cancelStart(){
+  startPrompt.style.display="none";
+  whyPrompt.style.display="flex";
+}
 function restartGame(){
   day=1; weather=''; inventory={}; gameOver=false; actionInProgress=false; currentMode=null;
   hasWetChoco=false; hasPpichu=false; started=false; bonusAction=false;
+  hasBear=false;
   ppichuEligible=false; ppichuEligibleNextTurn=false;
   logDiv.innerHTML='';
   dayDiv.textContent="오늘은 1일 입니다!";
   weatherDiv.textContent="날씨를 결정 중입니다...";
   document.querySelectorAll("button").forEach(b=>b.disabled=false);
   render();
-  startPromptShow();
+  helpBtn.style.display='none';
+  introPromptShow();
 }
 
-/* ======= 날씨 ======= */
+/* ======= 날씨 (2초 안내 + 2초 결과) ======= */
 function setWeather(cb){
-  showCenterMessage("☀️ 오늘의 날씨는?", 1000);
+  showCenterMessage("☀️ 오늘의 날씨는?");
   setTimeout(()=>{
     weather = weathers[Math.floor(Math.random()*weathers.length)];
-    const msg = weather.includes("비") ? "🌧️ 오늘은 비가 내립니다!"
-              : weather.includes("맑음") ? "☀️ 오늘은 날씨가 화창합니다!"
-              : "☁️ 오늘은 날씨가 흐립니다!";
+    const msg = weather.includes("비") ? "🌧️ 오늘은 비입니다!"
+              : weather.includes("맑음") ? "☀️ 오늘은 맑음입니다!"
+              : "☁️ 오늘은 흐림입니다!";
     document.body.style.backgroundColor = weatherColors[weather];
-    weatherDiv.textContent = msg; log(msg); showCenterMessage(msg, 1000);
+    weatherDiv.textContent = msg; 
+    log(msg); 
+    showCenterMessage(msg);
     cb && cb();
-  }, 1000);
+  }, 2000);
 }
 
 /* ======= 맑은 날 자동 건조 + 노트 팝업 ======= */
@@ -446,10 +455,10 @@ function sunnyAutoDry(){
   const s=wet[Math.floor(Math.random()*wet.length)];
   if(s==="젖은 초코파이"){
     removeItem("젖은 초코파이"); addItem("초코파이");
-    log("🍫 젖은 초코파이를 말렸습니다!"); showCenterMessage("🍫 초코파이를 말렸습니다!",1500);
+    log("🍫 젖은 초코파이를 말렸습니다!"); showCenterMessage("🍫 초코파이를 말렸습니다!");
   }else{
     removeItem("젖은 궁극의필기노트"); addItem("궁극의필기노트");
-    log("📘 젖은 궁극의 필기노트를 말렸습니다!"); showCenterMessage("📘 필기노트를 말렸습니다!",1500);
+    log("📘 젖은 궁극의 필기노트를 말렸습니다!"); showCenterMessage("📘 필기노트를 말렸습니다!");
     showNotePrompt();
   }
 }
@@ -462,13 +471,12 @@ function useNoteNow(){
   removeItem("궁극의필기노트");
   bonusAction = true;
   log("📘 필기노트를 사용했습니다! 다음 행동은 날짜가 넘어가지 않습니다.");
-  showCenterMessage("📘 필기노트 사용! 추가 행동 1회",1500);
+  showCenterMessage("📘 필기노트 사용! 추가 행동 1회",1200);
   dismissNotePrompt();
 }
 
 /* ======= 다음 날 ======= */
 function nextDay(){
-  // 턴 시작 시, '다음 턴부터 가능' 플래그 승격
   ppichuEligible = ppichuEligibleNextTurn;
   ppichuEligibleNextTurn = false;
 
@@ -479,11 +487,102 @@ function nextDay(){
   setWeather(()=>{ sunnyAutoDry(); });
 }
 
+/* ======= 캐릭터 이벤트 (턴 소모 없음, 등장 확률 60%) ======= */
+function maybeTriggerCharacterEvent(){
+  if(Math.random() >= 0.60) return {forcedNext:false};
+  // 모든 캐릭터 동일 후보
+  const candidates = ["헬스남","은보화","최낭만","이순원&숭이","박고고","백곰"];
+  const who = candidates[Math.floor(Math.random()*candidates.length)];
+  return resolveCharacterEvent(who);
+}
+function resolveCharacterEvent(name){
+  switch(name){
+    case "헬스남": {
+      const squidNames = Object.keys(inventory).filter(k=>dishSet.has(k) && k.includes("오징어"));
+      let pool=[];
+      squidNames.forEach(n=>{ for(let i=0;i<inventory[n];i++) pool.push(n); });
+      if(pool.length>=2){
+        for(let i=0;i<2;i++){
+          const idx=Math.floor(Math.random()*pool.length);
+          const dish=pool.splice(idx,1)[0];
+          removeItem(dish,1);
+        }
+        log("💪 헬스남 : 우...우! 단백질이 필요해...!");
+        showCenterMessage("💪 헬스남에게 오징어 요리 2개를 빼앗겼다...",2000);
+        return {forcedNext:false};
+      }else{
+        log("💪 헬스남 : 우!우! (단백질이 부족해진 헬스남이 발을 걸었다...)");
+        showCenterMessage("💪 발목을 삐어 한 턴 휴식...",2000);
+        log("💤 오늘은 하루를 쉽니다.");
+        nextDay();
+        return {forcedNext:true};
+      }
+    }
+    case "은보화": {
+      let pool=[];
+      Object.keys(inventory).forEach(k=>{
+        if(dishSet.has(k)) for(let i=0;i<inventory[k];i++) pool.push(k);
+      });
+      if(pool.length>0){
+        const idx=Math.floor(Math.random()*pool.length);
+        removeItem(pool[idx],1);
+        log("👑 은보화 : 내 미식회에 나를 위한 음식은 가지고 왔겠지?");
+        showCenterMessage("👑 은보화에게 요리를 하나 뺏겼다...",2000);
+      }else{
+        log("👑 은보화 : 내 미식회를 오면서 요리도 안가져와? 당장 나가!!");
+        showCenterMessage("👑 은보화에게 줄 음식이 없어 쫓겨났다...",2000);
+      }
+      return {forcedNext:false};
+    }
+    case "백곰": {
+      // 벌 회피 스킬 부여(지속) + 만날 때마다 요리 1개 지급
+      hasBear=true;
+      const dish = addRandomDish();
+      log(`🐻 백곰: 제가 알려드린 기술을 잘 사용하고 계시군요! (${dish} 획득)`);
+      showCenterMessage(`🐻 백곰: 기술 숙련! 요리 +1 (${dish})`,2000);
+      return {forcedNext:false};
+    }
+    case "최낭만": {
+      let pool=[];
+      Object.keys(inventory).forEach(k=>{
+        if(dishSet.has(k)) for(let i=0;i<inventory[k];i++) pool.push(k);
+      });
+      if(pool.length>0){
+        const idx=Math.floor(Math.random()*pool.length);
+        removeItem(pool[idx],1);
+        log("🎤 최낭만: 내가 근사한 노래를 들려줄게, 관람료로 음식 하나!");
+        showCenterMessage("🎤 최낭만의 노래! 관람료로 요리 1개를 내주었다...",2000);
+      }else{
+        log("🎤 최낭만: 요리가 없다고? 그럼 다음에!");
+        showCenterMessage("🎤 최낭만의 노래는 다음 기회에...",2000);
+      }
+      return {forcedNext:false};
+    }
+    case "이순원&숭이": {
+      const dish = addRandomDish();
+      log(`🙈 숭이: 우끼끼! 🙆🏻 이순원: 숭이가 나눠주래요~ (${dish})`);
+      showCenterMessage("🙈 이순원&숭이: 요리를 하나 받았다!",2000);
+      return {forcedNext:false};
+    }
+    case "박고고": {
+      const tool = addRandomTool();
+      if(tool){
+        log(`🏺 박고고: 너도 고고학에 관심이 생긴거야??!! 내 도구를 나눠줄게!!`);
+        showCenterMessage(`🏺 박고고로부터 ${tool} 획득!`,2000);
+      }else{
+        log("🏺 박고고: 이미 모든 도구를 갖고 있네! 응원만 하고 간다.");
+        showCenterMessage("🏺 박고고로부터 응원을 받았다",2000);
+      }
+      return {forcedNext:false};
+    }
+  }
+  return {forcedNext:false};
+}
+
 /* ======= 도구 제작 ======= */
 function craftTool(a,b){
-  // 해독제
-  if((a==="초코파이"&&b==="삐쭉삐쭉열매")||(b==="초코파이"&&a==="삐쭉삐쭉열매")){
-    removeItem("초코파이"); removeItem("삐쭉삐쭉열매");
+  if((a==="초코파이"&&b==="삐죽삐죽열매")||(b==="초코파이"&&a==="삐죽삐죽열매")){
+    removeItem("초코파이"); removeItem("삐죽삐죽열매");
     addItem("해독제"); log("✨ 해독제를 만들었습니다!"); showCenterMessage("💊 해독제 완성!",2000);
     endGame("🛶 해독제를 만들어 무인도에서 탈출했습니다!"); cancelMode(); return;
   }
@@ -493,7 +592,14 @@ function craftTool(a,b){
   removeItem(a,1); removeItem(b,1); addItem(result);
   showCenterMessage(`🛠️ ${result} 제작 완료!`,2000); log(`🛠️ ${result} 제작 완료!`);
   cancelMode();
-  setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); },1000);
+
+  setTimeout(()=>{
+    const ev = maybeTriggerCharacterEvent();
+    if(!ev.forcedNext){
+      if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); }
+      else nextDay();
+    }
+  },800);
 }
 
 /* ======= 요리 제작 ======= */
@@ -504,27 +610,33 @@ function cookFood(a,b){
   removeItem(a,1); removeItem(b,1); addItem(dish);
   showCenterMessage(`✨ ${dish} 완성!`,2000); log(`✨ ${dish} 완성!`);
   cancelMode();
-  setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); },1000);
+
+  setTimeout(()=>{
+    const ev = maybeTriggerCharacterEvent();
+    if(!ev.forcedNext){
+      if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); }
+      else nextDay();
+    }
+  },800);
 }
 
-/* ======= 채집 (비=나뭇가지/돌/도구재료, 맑음만 벌집) + 삐쭉 40%) ======= */
+/* ======= 채집 ======= */
 function gather(){
   if(!started||gameOver||actionInProgress) return;
   actionInProgress=true;
   showCenterMessage("🌿 채집중...",1000);
   setTimeout(()=>{
     let got;
-
     if(weather.includes("비")){
-      // ✅ 비 오는 날 채집: 나뭇가지/돌 + 도구에 따른 재료만
-      const pool = ["나뭇가지","돌"];
+      // 비 오는 날: 나뭇가지/돌 + 도구에 따른 재료 (요청에 맞게 유지)
+      const pool=["나뭇가지","돌"];
       if(inventory["돌도끼"]) pool.push("코코넛");
       if(inventory["새총"])   pool.push("바나나");
       if(inventory["버섯칼"]) pool.push("버섯");
-      got = pool[Math.floor(Math.random()*pool.length)];
+      got=pool[Math.floor(Math.random()*pool.length)];
     }else{
       const pool=["나뭇가지","돌"];
-      if(weather.includes("맑음")) pool.push("벌집"); // 벌집은 맑은 날에만
+      if(weather.includes("맑음")) pool.push("벌집");
       if(inventory["돌도끼"]) pool.push("코코넛");
       if(inventory["새총"])   pool.push("바나나");
       if(inventory["버섯칼"]) pool.push("버섯");
@@ -532,26 +644,47 @@ function gather(){
     }
 
     if(got==="벌집"){
-      log("🐝 벌집이 떨어져 벌에 쏘였습니다! 이번 턴은 쉽니다.");
-      showCenterMessage("🐝 벌집이 떨어졌습니다!",1500);
-      setTimeout(()=>{ log("💤 오늘은 하루를 쉽니다."); nextDay(); actionInProgress=false; },1000);
+      if(hasBear){
+        log("🐻 백곰이 알려준 지식으로 벌을 피했다! 어라? 요리 1개를 얻었다.");
+        const dish=addRandomDish();
+        showCenterMessage(`🐻 벌을 무사히 피했다! 요리 획득: ${dish}`,2000);
+        setTimeout(()=>{
+          const ev = maybeTriggerCharacterEvent();
+          if(!ev.forcedNext){
+            if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); }
+            else nextDay();
+          }
+          actionInProgress=false;
+        },800);
+      }else{
+        log("🐝 벌집이 떨어져 벌에 쏘였습니다! 이번 턴은 쉽니다.");
+        showCenterMessage("🐝 벌집이 떨어졌습니다!",2000);
+        setTimeout(()=>{ log("💤 오늘은 하루를 쉽니다."); nextDay(); actionInProgress=false; },800);
+      }
     }else{
-      addItem(got); log(`🍃 ${got} 획득!`); showCenterMessage(`🍃 ${got} 획득!`,1500);
+      addItem(got); log(`🍃 ${got} 획득!`); showCenterMessage(`🍃 ${got} 획득!`,1200);
 
-      // 🌺 삐쭉삐쭉열매: 맑음만, 젖초 획득 '다음 턴'부터, 1회만, 확률 40%
+      // 삐죽삐죽열매: 맑은 날만, 젖초 다음 턴부터 가능, 1회만, 40%
       if(!weather.includes("비") && weather.includes("맑음") && ppichuEligible && !hasPpichu){
         if(Math.random()<0.40){
-          addItem("삐쭉삐쭉열매"); hasPpichu=true; ppichuEligible=false;
-          log("🌺 삐쭉삐쭉열매를 발견했습니다!"); showCenterMessage("🌺 삐쭉삐쭉열매 발견!",1500);
+          addItem("삐죽삐죽열매"); hasPpichu=true; ppichuEligible=false;
+          log("🌺 삐죽삐죽열매를 발견했습니다!"); showCenterMessage("🌺 삐죽삐죽열매 발견!",2000);
         }
       }
 
-      setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); actionInProgress=false; },1000);
+      setTimeout(()=>{
+        const ev = maybeTriggerCharacterEvent();
+        if(!ev.forcedNext){
+          if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); }
+          else nextDay();
+        }
+        actionInProgress=false;
+      },800);
     }
-  },1000);
+  },800);
 }
 
-/* ======= 낚시 (비: 조개30% / 젖노트40% / 젖초코30%) ======= */
+/* ======= 낚시 ======= */
 function fish(){
   if(!started||gameOver||actionInProgress) return;
   actionInProgress=true;
@@ -559,24 +692,29 @@ function fish(){
   setTimeout(()=>{
     let got;
     if(weather.includes("비")){
-      const r = Math.random();
-      if (r < 0.30) got = "조개껍데기";
-      else if (r < 0.70) got = "젖은 궁극의필기노트";
-      else got = "젖은 초코파이";
-
-      if(got==="젖은 초코파이"){
-        hasWetChoco = true;
-        ppichuEligibleNextTurn = true; // 다음 턴부터 열매 가능
-      }
+      // 비: 조개 30 / 젖노트 40 / 젖초코 30
+      const r=Math.random();
+      if(r<0.30) got="조개껍데기";
+      else if(r<0.70) got="젖은 궁극의필기노트";
+      else got="젖은 초코파이";
+      if(got==="젖은 초코파이"){ hasWetChoco=true; ppichuEligibleNextTurn=true; }
     }else if(weather.includes("흐림")){
       got=Math.random()<0.5?"오징어":"해파리";
     }else{
       const f=["줄무늬물고기","점박이물고기","얼룩무늬물고기"];
       got=f[Math.floor(Math.random()*f.length)];
     }
-    addItem(got); log(`🎣 ${got} 획득!`); showCenterMessage(`🎣 ${got} 획득!`,1500);
-    setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); actionInProgress=false; },1000);
-  },1000);
+    addItem(got); log(`🎣 ${got} 획득!`); showCenterMessage(`🎣 ${got} 획득!`,1200);
+
+    setTimeout(()=>{
+      const ev = maybeTriggerCharacterEvent();
+      if(!ev.forcedNext){
+        if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); }
+        else nextDay();
+      }
+      actionInProgress=false;
+    },800);
+  },800);
 }
 
 /* ======= 게임 종료 ======= */
@@ -588,7 +726,7 @@ function endGame(msg){
 }
 
 /* ======= 초기 ======= */
-document.addEventListener("DOMContentLoaded",()=>{ render(); startPromptShow(); });
+document.addEventListener("DOMContentLoaded",()=>{ render(); introPromptShow(); });
 </script>
 </body>
 </html>
