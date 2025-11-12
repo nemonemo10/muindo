@@ -50,7 +50,6 @@
     line-height: 1.2;
     cursor: pointer;
   }
-
   button:disabled { opacity: .6; cursor: not-allowed; }
 
   #weatherDisplay { font-size: 22px; margin-top: 14px; }
@@ -105,7 +104,6 @@
     opacity: 1;
     font-size: 15px;
   }
-
   .item-box.dimmed { opacity: .35; }
   .item-box.selected { outline: 3px solid #ff7675; opacity: 1; font-weight: 700; }
 
@@ -130,22 +128,11 @@
     gap: 12px;
     z-index: 1001;
   }
-
-  .popup .btn-row {
-    display: flex;
-    gap: 10px;
-  }
-
+  .popup .btn-row { display: flex; gap: 10px; }
   .popup button {
-    font-size: 18px;     /* 팝업 버튼 폰트 고정 */
-    line-height: 1.2;
-    padding: 8px 20px;
+    font-size: 18px; line-height: 1.2; padding: 8px 20px;
   }
-
-  .popup small {
-    font-size: 14px;     /* 설명 텍스트 고정 */
-    line-height: 1.3;
-  }
+  .popup small { font-size: 14px; line-height: 1.3; }
 </style>
 </head>
 <body>
@@ -214,7 +201,7 @@ const recipes={
   "돌+돌":"돌도끼","돌+나뭇가지":"새총","돌+조개껍데기":"버섯칼",
   "초코파이+삐쭉삐쭉열매":"해독제",
   // 요리
-  "해파리+바나나":"해파리바나나절임",
+  "해파리+바나나":"해파리바나절임",
   "코코넛+바나나":"코코바나볶음",
   "바나나+버섯":"버섯바나나맛탕",
   "바나나+줄무늬물고기":"줄무늬바나구이",
@@ -285,7 +272,7 @@ function hasPairFor(item, mode){
   if(mode==="cook"){
     if(!cookIngredients.has(item)) return false;
     for(const other of items){
-      if(other===item) continue;                     // 같은 재료 2개 금지
+      if(other===item) continue; // 같은 재료 2개 금지
       const r=recipeResult(item,other);
       if(r && isDishResult(r)) return true;
     }
@@ -477,20 +464,21 @@ function cookFood(a,b){
   setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); },1000);
 }
 
-/* ======= 채집 (삐쭉삐쭉열매: 다음 턴부터, 맑은 날만, 20%) ======= */
+/* ======= 채집 ======= */
 function gather(){
   if(!started||gameOver||actionInProgress) return;
   actionInProgress=true;
   showCenterMessage("🌿 채집중...",1000);
   setTimeout(()=>{
     let got;
+
     if(weather.includes("비")){
-      const rain=["조개껍데기","젖은 궁극의필기노트","젖은 초코파이"];
-      got=rain[Math.floor(Math.random()*rain.length)];
-      if(got==="젖은 초코파이"){
-        hasWetChoco = true;
-        ppichuEligibleNextTurn = true; // 다음 턴부터 열매 가능
-      }
+      // ✅ 비 오는 날 채집: 나뭇가지/돌 + 도구에 따른 재료만
+      const pool = ["나뭇가지","돌"];
+      if(inventory["돌도끼"]) pool.push("코코넛");
+      if(inventory["새총"])   pool.push("바나나");
+      if(inventory["버섯칼"]) pool.push("버섯");
+      got = pool[Math.floor(Math.random()*pool.length)];
     }else{
       const pool=["나뭇가지","돌"];
       if(weather.includes("맑음")) pool.push("벌집");
@@ -507,10 +495,10 @@ function gather(){
     }else{
       addItem(got); log(`🍃 ${got} 획득!`); showCenterMessage(`🍃 ${got} 획득!`,1500);
 
-      // 🔸 삐쭉삐쭉열매: 비 금지, 맑은 날만, 젖초 획득 '다음 턴'부터, 1회만, 20%
+      // 🌺 삐쭉삐쭉열매: 맑음만, 젖초 획득 '다음 턴'부터, 1회만, ★확률 40%★
       if(!weather.includes("비") && weather.includes("맑음") && ppichuEligible && !hasPpichu){
-        if(Math.random()<0.20){
-          addItem("삐쭉삐쭉열매"); hasPpichu=true; ppichuEligible=false; // 1회만
+        if(Math.random()<0.40){
+          addItem("삐쭉삐쭉열매"); hasPpichu=true; ppichuEligible=false;
           log("🌺 삐쭉삐쭉열매를 발견했습니다!"); showCenterMessage("🌺 삐쭉삐쭉열매 발견!",1500);
         }
       }
@@ -520,7 +508,7 @@ function gather(){
   },1000);
 }
 
-/* ======= 낚시 ======= */
+/* ======= 낚시 (비: 조개30/노트40/젖초30) ======= */
 function fish(){
   if(!started||gameOver||actionInProgress) return;
   actionInProgress=true;
@@ -528,7 +516,11 @@ function fish(){
   setTimeout(()=>{
     let got;
     if(weather.includes("비")){
-      got=Math.random()<0.5?"젖은 초코파이":"젖은 궁극의필기노트";
+      const r = Math.random();
+      if (r < 0.30) got = "조개껍데기";
+      else if (r < 0.70) got = "젖은 궁극의필기노트";
+      else got = "젖은 초코파이";
+
       if(got==="젖은 초코파이"){
         hasWetChoco = true;
         ppichuEligibleNextTurn = true; // 다음 턴부터 열매 가능
