@@ -2,11 +2,25 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>무인도에서 살아남기</title>
 <style>
-  body { font-family: "Noto Sans KR", sans-serif; background: #dff9fb; transition: background-color .6s ease; text-align: center; padding: 30px;}
-  #log { border: 2px solid #333; border-radius: 10px; background: #fff; height: 350px; width: 760px; margin: 18px auto; padding: 15px; overflow-y: auto; text-align: left;}
+  /* 🔒 폰트 비율 고정 */
+  html, body {
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+  }
+
+  body { 
+    font-family: "Noto Sans KR", sans-serif; 
+    background: #dff9fb; 
+    transition: background-color .6s ease; 
+    text-align: center; 
+    padding: 30px;
+    font-size: 16px; /* 고정 폰트 크기 */
+  }
+  h1 { font-size: 28px; }
+  #log { border: 2px solid #333; border-radius: 10px; background: #fff; height: 350px; width: 760px; margin: 18px auto; padding: 15px; overflow-y: auto; text-align: left; font-size: 16px; }
   button { margin: 6px; padding: 10px 18px; border-radius: 8px; border: none; background: #74b9ff; color: #fff; font-size: 16px; cursor: pointer;}
   button:disabled { opacity: .6; cursor: not-allowed;}
   #weatherDisplay { font-size: 22px; margin-top: 14px;}
@@ -14,8 +28,8 @@
   .highlight { font-weight: 700; color: #0984e3;}
   #inventoryWrap { max-width: 760px; margin: 0 auto;}
   #inventory, #toolsBar, #madeBar { margin-top: 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; transition: opacity .3s ease;}
-  .title-chip { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; font-weight: 700;}
-  .item-box { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; user-select: none; cursor: pointer; transition: all .2s ease; opacity: 1;}
+  .title-chip { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 16px;}
+  .item-box { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; user-select: none; cursor: pointer; transition: all .2s ease; opacity: 1; font-size: 15px;}
   .item-box.dimmed { opacity: .35;}
   .item-box.selected { outline: 3px solid #ff7675; opacity: 1; font-weight: 700;}
   #cancelModeBtn { background: #b2bec3;}
@@ -65,6 +79,8 @@
 </div>
 
 <button id="restartBtn" style="display:none;" onclick="restartGame()">🔁 다시하기</button>
+
+
 
 <script>
 /* ======= 상태 ======= */
@@ -376,7 +392,7 @@ function gather(){
     if(got==="벌집"){
       log("🐝 벌집이 떨어져 벌에 쏘였습니다! 이번 턴은 쉽니다.");
       showCenterMessage("🐝 벌집이 떨어졌습니다!",1500);
-      setTimeout(()=>{ log("💤오늘은 하루를 쉽니다."); nextDay(); actionInProgress=false; },1000);
+      setTimeout(()=>{ log("💤 오늘은 하루를 쉽니다."); nextDay(); actionInProgress=false; },1000);
     }else{
       addItem(got); log(`🍃 ${got} 획득!`); showCenterMessage(`🍃 ${got} 획득!`,1500);
 
