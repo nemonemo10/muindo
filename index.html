@@ -199,7 +199,7 @@ const toolEmojis={ "돌도끼":"🪓", "새총":"🪃", "버섯칼":"🍄" };
 const recipes={
   // 도구/해독제
   "돌+돌":"돌도끼","돌+나뭇가지":"새총","돌+조개껍데기":"버섯칼",
-  "초코파이+삐쭉삐쭉열매":"해독제",
+  "초코파이+삐죽삐죽열매":"해독제",
   // 요리
   "해파리+바나나":"해파리바나절임",
   "코코넛+바나나":"코코바나볶음",
@@ -259,7 +259,7 @@ function hasPairFor(item, mode){
   const items = Object.entries(inventory).filter(([k,v])=>v>0).map(([k])=>k);
   if(mode==="tool"){
     const toolPairs = [
-      ["돌","돌"], ["돌","나뭇가지"], ["돌","조개껍데기"], ["초코파이","삐쭉삐쭉열매"]
+      ["돌","돌"], ["돌","나뭇가지"], ["돌","조개껍데기"], ["초코파이","삐죽삐죽열매"]
     ];
     for(const [a,b] of toolPairs){
       if(item!==a && item!==b) continue;
@@ -439,8 +439,8 @@ function nextDay(){
 /* ======= 도구 제작 ======= */
 function craftTool(a,b){
   // 해독제
-  if((a==="초코파이"&&b==="삐쭉삐쭉열매")||(b==="초코파이"&&a==="삐쭉삐쭉열매")){
-    removeItem("초코파이"); removeItem("삐쭉삐쭉열매");
+  if((a==="초코파이"&&b==="삐죽삐죽열매")||(b==="초코파이"&&a==="삐죽삐죽열매")){
+    removeItem("초코파이"); removeItem("삐죽삐죽열매");
     addItem("해독제"); log("✨ 해독제를 만들었습니다!"); showCenterMessage("💊 해독제 완성!",2000);
     endGame("🛶 해독제를 만들어 무인도에서 탈출했습니다!"); cancelMode(); return;
   }
@@ -495,11 +495,11 @@ function gather(){
     }else{
       addItem(got); log(`🍃 ${got} 획득!`); showCenterMessage(`🍃 ${got} 획득!`,1500);
 
-      // 🌺 삐쭉삐쭉열매: 맑음만, 젖초 획득 '다음 턴'부터, 1회만, ★확률 40%★
+      // 🌺 삐죽삐죽열매: 맑음만, 젖초 획득 '다음 턴'부터, 1회만, ★확률 40%★
       if(!weather.includes("비") && weather.includes("맑음") && ppichuEligible && !hasPpichu){
         if(Math.random()<0.40){
-          addItem("삐쭉삐쭉열매"); hasPpichu=true; ppichuEligible=false;
-          log("🌺 삐쭉삐쭉열매를 발견했습니다!"); showCenterMessage("🌺 삐쭉삐쭉열매 발견!",1500);
+          addItem("삐죽삐죽열매"); hasPpichu=true; ppichuEligible=false;
+          log("🌺 삐죽삐죽열매를 발견했습니다!"); showCenterMessage("🌺 삐죽삐죽열매 발견!",1500);
         }
       }
 
