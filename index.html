@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>무인도 탈출 시뮬레이션</title>
 <style>
-  body { font-family: "Noto Sans KR", sans-serif; background: #dff9fb; transition: background-color 0.6s ease; text-align: center; padding: 30px; }
-  #log { border: 2px solid #333; border-radius: 10px; background: #fff; height: 350px; width: 760px; margin: 18px auto; padding: 15px; overflow-y: auto; text-align: left; }
-  button { margin: 6px; padding: 10px 18px; border-radius: 8px; border: none; background: #74b9ff; color: #fff; font-size: 16px; cursor: pointer; }
-  button:disabled { opacity: 0.6; cursor: not-allowed; }
-  #weatherDisplay { font-size: 22px; margin-top: 14px; }
-  #centerMessage { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; font-weight: 700; display: none; background: rgba(255,255,255,0.95); padding: 25px 50px; border-radius: 16px; z-index: 999; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
-  .highlight { font-weight: 700; color: #0984e3; }
-  #inventoryWrap { max-width: 760px; margin: 0 auto; }
-  #inventory, #toolsBar, #madeBar { margin-top: 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; transition: opacity 0.3s ease; }
-  .title-chip { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; font-weight: 700; }
-  .item-box { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; user-select: none; cursor: pointer; transition: all .2s ease; opacity: 1; }
-  .item-box.dimmed { opacity: 0.4; }
-  .item-box.selected { outline: 3px solid #ff7675; opacity: 1; font-weight: 700; }
-  #cancelModeBtn { background: #b2bec3; }
+  body { font-family: "Noto Sans KR", sans-serif; background: #dff9fb; transition: background-color .6s ease; text-align: center; padding: 30px;}
+  #log { border: 2px solid #333; border-radius: 10px; background: #fff; height: 350px; width: 760px; margin: 18px auto; padding: 15px; overflow-y: auto; text-align: left;}
+  button { margin: 6px; padding: 10px 18px; border-radius: 8px; border: none; background: #74b9ff; color: #fff; font-size: 16px; cursor: pointer;}
+  button:disabled { opacity: .6; cursor: not-allowed;}
+  #weatherDisplay { font-size: 22px; margin-top: 14px;}
+  #centerMessage { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; font-weight: 700; display: none; background: rgba(255,255,255,.95); padding: 25px 50px; border-radius: 16px; z-index: 999; box-shadow: 0 0 20px rgba(0,0,0,.2);}
+  .highlight { font-weight: 700; color: #0984e3;}
+  #inventoryWrap { max-width: 760px; margin: 0 auto;}
+  #inventory, #toolsBar, #madeBar { margin-top: 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; transition: opacity .3s ease;}
+  .title-chip { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; font-weight: 700;}
+  .item-box { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; user-select: none; cursor: pointer; transition: all .2s ease; opacity: 1;}
+  .item-box.dimmed { opacity: .35;}
+  .item-box.selected { outline: 3px solid #ff7675; opacity: 1; font-weight: 700;}
+  #cancelModeBtn { background: #b2bec3;}
+  .popup { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,.98); padding: 30px 50px; border-radius: 20px; box-shadow: 0 0 25px rgba(0,0,0,.25); font-size: 26px; font-weight: bold; display: none; flex-direction: column; align-items: center; gap: 12px; z-index: 1001;}
+  .popup .btn-row { display: flex; gap: 10px;}
 </style>
 </head>
 <body>
-
 <h1>🏝️ 무인도 탈출 시뮬레이션</h1>
 <div id="dayDisplay">오늘은 1일 입니다!</div>
 <div id="weatherDisplay">날씨를 결정 중입니다...</div>
@@ -38,198 +39,394 @@
   <button onclick="fish()">낚시</button>
 </div>
 <div style="margin-top:8px;">
-  <button id="toolBtn" onclick="enterToolMode()">🛠️ 도구 제작</button>
-  <button id="cookBtn" onclick="enterCookMode()">🍳 요리</button>
+  <button id="toolBtn" onclick="enterToolMode()">🛠️ 도구제작</button>
+  <button id="cookBtn" onclick="enterCookMode()">🍳 요리제작</button>
   <button id="cancelModeBtn" style="display:none;" onclick="cancelMode()">취소</button>
 </div>
 
 <div id="log"></div>
 <div id="centerMessage"></div>
+
+<div id="startPrompt" class="popup">
+  무인도에서 생존하기!<br/>게임을 시작할까요?
+  <div class="btn-row">
+    <button onclick="startGame()">예</button>
+    <button onclick="cancelStart()">아니오</button>
+  </div>
+</div>
+
+<div id="notePrompt" class="popup">
+  📘 필기노트를 사용하시겠습니까?
+  <div class="btn-row">
+    <button onclick="useNoteNow()">예</button>
+    <button onclick="dismissNotePrompt()">아니오</button>
+  </div>
+  <small style="font-size:14px; font-weight:500;">(아니오를 누르면 인벤토리의 필기노트를 눌러 나중에 사용할 수 있습니다)</small>
+</div>
+
 <button id="restartBtn" style="display:none;" onclick="restartGame()">🔁 다시하기</button>
 
 <script>
-let day=1, weather='', inventory={}, gameOver=false, actionInProgress=false, currentMode=null, selected=[];
-let hasWetChoco=false, hasPpichu=false;
+/* ======= 상태 ======= */
+let day=1, weather='', inventory={}, gameOver=false, actionInProgress=false, currentMode=null;
+let hasWetChoco=false, hasPpichu=false, started=false, bonusAction=false;
 
-const weathers=["☀️ 맑음","🌧️ 비","⛅ 흐림"];
-const weatherColors={"☀️ 맑음":"#ffeaa7","🌧️ 비":"#74b9ff","⛅ 흐림":"#b2bec3"};
+/* 🔸 다음 턴부터 열매 등장 허용 플래그 */
+let ppichuEligible = false;          // 현재 턴에서 열매 등장 허용 여부
+let ppichuEligibleNextTurn = false;  // 다음 턴 시작 시 ppichuEligible로 승격
+
+/* ======= 상수 ======= */
+const weathers=["☀️ 맑음","🌧️ 비","☁️ 흐림"];
+const weatherColors={"☀️ 맑음":"#ffeaa7","🌧️ 비":"#74b9ff","☁️ 흐림":"#b2bec3"};
 const toolNames=["버섯칼","새총","돌도끼"];
+const toolEmojis={ "돌도끼":"🪓", "새총":"🪃", "버섯칼":"🍄🔪" };
+
+/* 레시피 */
 const recipes={
+  // 도구/해독제
   "돌+돌":"돌도끼","돌+나뭇가지":"새총","돌+조개껍데기":"버섯칼",
   "초코파이+삐쭉삐쭉열매":"해독제",
-  "해파리+바나나":"해파리바나나절임","코코넛+바나나":"코코바나볶음","바나나+버섯":"버섯바나나맛탕",
-  "바나나+줄무늬물고기":"줄무늬바나구이","바나나+점박이물고기":"바나나점박이푸딩","바나나+얼룩무늬물고기":"얼룩바나스튜",
-  "코코넛+해파리":"코코해파리숙회","코코넛+버섯":"버섯크림코코넛칩","코코넛+줄무늬물고기":"줄무늬코코조림",
-  "코코넛+점박이물고기":"코코점박이전골","코코넛+얼룩무늬물고기":"코코얼룩무늬구이",
-  "버섯+해파리":"해파리버섯스튜","버섯+줄무늬물고기":"줄무늬버섯볶음","버섯+점박이물고기":"점박이버섯찜",
-  "버섯+얼룩무늬물고기":"얼룩무늬버섯솥밥","해파리+오징어":"해파리오징어냉채","해파리+줄무늬물고기":"해파리줄무늬초무침",
-  "해파리+점박이물고기":"점박이해파리탕","해파리+얼룩무늬물고기":"해파리얼룩무늬전","오징어+바나나":"바나나통오징어",
-  "오징어+코코넛":"코코넛오징어튀김","오징어+버섯":"오징어버섯전","오징어+줄무늬물고기":"줄무늬오징어강정",
-  "오징어+점박이물고기":"오징어점박이꼬치","오징어+얼룩무늬물고기":"얼룩무늬오징어구이",
-  "줄무늬물고기+점박이물고기":"무늬무늬어묵볶음","줄무늬물고기+얼룩무늬물고기":"뮤늬뮤늬생선찜",
+  // 요리
+  "해파리+바나나":"해파리바나나절임",
+  "코코넛+바나나":"코코바나볶음",
+  "바나나+버섯":"버섯바나나맛탕",
+  "바나나+줄무늬물고기":"줄무늬바나구이",
+  "바나나+점박이물고기":"바나나점박이푸딩",
+  "바나나+얼룩무늬물고기":"얼룩바나스튜",
+  "코코넛+해파리":"코코해파리숙회",
+  "코코넛+버섯":"버섯크림코코넛칩",
+  "코코넛+줄무늬물고기":"줄무늬코코조림",
+  "코코넛+점박이물고기":"코코점박이전골",
+  "코코넛+얼룩무늬물고기":"코코얼룩무늬구이",
+  "버섯+해파리":"해파리버섯스튜",
+  "버섯+줄무늬물고기":"줄무늬버섯볶음",
+  "버섯+점박이물고기":"점박이버섯찜",
+  "버섯+얼룩무늬물고기":"얼룩무늬버섯솥밥",
+  "해파리+오징어":"해파리오징어냉채",
+  "해파리+줄무늬물고기":"해파리줄무늬초무침",
+  "해파리+점박이물고기":"점박이해파리탕",
+  "해파리+얼룩무늬물고기":"해파리얼룩무늬전",
+  "오징어+바나나":"바나나통오징어",
+  "오징어+코코넛":"코코넛오징어튀김",
+  "오징어+버섯":"오징어버섯전",
+  "오징어+줄무늬물고기":"줄무늬오징어강정",
+  "오징어+점박이물고기":"오징어점박이꼬치",
+  "오징어+얼룩무늬물고기":"얼룩무늬오징어구이",
+  "줄무늬물고기+점박이물고기":"무늬무늬어묵볶음",
+  "줄무늬물고기+얼룩무늬물고기":"무늬무늬생선찜",
   "점박이물고기+얼룩무늬물고기":"무늬무늬생선탕"
 };
+
+/* 요리 재료 목록 */
+const cookIngredients = new Set([
+  "오징어","해파리","버섯","바나나","코코넛",
+  "줄무늬물고기","점박이물고기","얼룩무늬물고기"
+]);
+
+/* ======= 엘리먼트 & 유틸 ======= */
 const logDiv=document.getElementById("log"), invDiv=document.getElementById("inventory"),
-toolsBar=document.getElementById("toolsBar"), madeBar=document.getElementById("madeBar"),
-weatherDiv=document.getElementById("weatherDisplay"), dayDiv=document.getElementById("dayDisplay"),
-cancelModeBtn=document.getElementById("cancelModeBtn"), centerMsg=document.getElementById("centerMessage"),
-restartBtn=document.getElementById("restartBtn");
+      toolsBar=document.getElementById("toolsBar"), madeBar=document.getElementById("madeBar"),
+      weatherDiv=document.getElementById("weatherDisplay"), dayDiv=document.getElementById("dayDisplay"),
+      cancelModeBtn=document.getElementById("cancelModeBtn"), centerMsg=document.getElementById("centerMessage"),
+      restartBtn=document.getElementById("restartBtn"), startPrompt=document.getElementById("startPrompt"),
+      notePrompt=document.getElementById("notePrompt");
 
-function log(t){logDiv.innerHTML+=`<div>${t}</div>`;logDiv.scrollTop=logDiv.scrollHeight;}
-function showCenterMessage(t,ms=2000){centerMsg.textContent=t;centerMsg.style.display="block";setTimeout(()=>centerMsg.style.display="none",ms);}
-function addItem(n){inventory[n]=(inventory[n]||0)+1;render();}
-function removeItem(n,c=1){if(!inventory[n])return;inventory[n]-=c;if(inventory[n]<=0)delete inventory[n];render();}
+function log(t){ logDiv.innerHTML+=`<div>${t}</div>`; logDiv.scrollTop=logDiv.scrollHeight; }
+function showCenterMessage(t,ms=1500){ centerMsg.textContent=t; centerMsg.style.display="block"; setTimeout(()=>centerMsg.style.display="none",ms); }
+function addItem(n){ inventory[n]=(inventory[n]||0)+1; render(); }
+function removeItem(n,c=1){ if(!inventory[n]) return; inventory[n]-=c; if(inventory[n]<=0) delete inventory[n]; render(); }
 
-// 렌더링
+/* ======= 제작 가능 판정 ======= */
+function recipeResult(a,b){ return recipes[`${a}+${b}`] || recipes[`${b}+${a}`] || null; }
+function isToolResult(x){ return x==="돌도끼"||x==="새총"||x==="버섯칼"||x==="해독제"; }
+function isDishResult(x){ return !isToolResult(x) && x!==null; }
+
+function hasPairFor(item, mode){
+  const items = Object.entries(inventory).filter(([k,v])=>v>0).map(([k])=>k);
+  if(mode==="tool"){
+    const toolPairs = [
+      ["돌","돌"], ["돌","나뭇가지"], ["돌","조개껍데기"], ["초코파이","삐쭉삐쭉열매"]
+    ];
+    for(const [a,b] of toolPairs){
+      if(item!==a && item!==b) continue;
+      const hasA = (inventory[a]||0), hasB=(inventory[b]||0);
+      if(a===b){ if(item===a && hasA>=2){ const r=recipeResult(a,b); if(r && (r==="해독제" || !inventory[r])) return true; } }
+      else { if(hasA>0 && hasB>0){ const r=recipeResult(a,b); if(r && (r==="해독제" || !inventory[r])) return true; } }
+    }
+    return false;
+  }
+  if(mode==="cook"){
+    if(!cookIngredients.has(item)) return false;
+    for(const other of items){
+      if(other===item) continue;                     // 같은 재료 2개 금지
+      const r=recipeResult(item,other);
+      if(r && isDishResult(r)) return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+/* ======= 렌더 ======= */
 function render(){
   invDiv.innerHTML='<span class="title-chip">🎒 인벤토리:</span>';
   toolsBar.innerHTML='<span class="title-chip">🔧 보유 도구:</span>';
   madeBar.innerHTML='<span class="title-chip">🍽️ 만든 음식:</span>';
 
-  toolNames.forEach(t=>{if(inventory[t]){const box=document.createElement("span");box.className="item-box";box.textContent=t;toolsBar.appendChild(box);}});
-  const dishes=Object.keys(inventory).filter(k=>!toolNames.includes(k)&&Object.values(recipes).includes(k));
-  dishes.forEach(k=>{const box=document.createElement("span");box.className="item-box";box.textContent=k;madeBar.appendChild(box);});
-  const normal=Object.keys(inventory).filter(k=>!toolNames.includes(k)&&!Object.values(recipes).includes(k));
-  normal.forEach(k=>{const box=document.createElement("span");box.className="item-box";box.dataset.item=k;box.textContent=inventory[k]>1?`${k} x${inventory[k]}`:k;
-    if(currentMode) box.classList.add("dimmed");
-    box.addEventListener("click",()=>selectItem(k,box));
+  // 도구 바
+  ["버섯칼","새총","돌도끼"].forEach(t=>{
+    if(inventory[t]){
+      const box=document.createElement("span");
+      box.className="item-box";
+      box.textContent=`${toolEmojis[t]} ${t}`;
+      toolsBar.appendChild(box);
+    }
+  });
+
+  // 만든 음식 바
+  const dishSet = new Set(Object.values(recipes).filter(v=>!isToolResult(v)));
+  Object.keys(inventory).forEach(k=>{
+    if(dishSet.has(k)){
+      const box=document.createElement("span");
+      box.className="item-box";
+      box.textContent=k;
+      madeBar.appendChild(box);
+    }
+  });
+
+  // 인벤토리(모드별 표시)
+  const all = Object.keys(inventory).filter(k=>inventory[k]>0);
+  let show=[];
+  if(currentMode==="tool"){
+    show = all.filter(k=>!toolNames.includes(k) && !dishSet.has(k) && hasPairFor(k,"tool"));
+  }else if(currentMode==="cook"){
+    show = all.filter(k=>!toolNames.includes(k) && !dishSet.has(k) && hasPairFor(k,"cook"));
+  }else{
+    show = all.filter(k=>!toolNames.includes(k) && !dishSet.has(k));
+  }
+
+  if(show.length===0){
+    const box=document.createElement("span"); box.className="item-box"; box.textContent="없음"; invDiv.appendChild(box);
+    return;
+  }
+
+  show.forEach(k=>{
+    const box=document.createElement("span");
+    box.className="item-box";
+    box.dataset.item=k;
+    box.textContent = inventory[k]>1 ? `${k} x${inventory[k]}` : k;
+    if(currentMode){ box.classList.add("dimmed"); }
+
+    box.addEventListener("click",()=>{
+      if(!currentMode){
+        if(k==="궁극의필기노트"){ showNotePrompt(); }
+        return;
+      }
+      const selectedEls=[...document.querySelectorAll(".item-box.selected")];
+      if(selectedEls.length>=2) return;
+      box.classList.remove("dimmed");
+      box.classList.add("selected");
+      const picked = selectedEls.map(n=>n.dataset.item); picked.push(k);
+      if(picked.length===2){
+        if(currentMode==="tool") craftTool(picked[0],picked[1]);
+        else cookFood(picked[0],picked[1]);
+      }
+    });
     invDiv.appendChild(box);
   });
 }
 
-function selectItem(item,box){
-  if(!currentMode)return;
-  if(selected.includes(item))return;
-  box.classList.remove("dimmed");box.classList.add("selected");selected.push(item);
-  if(selected.length===2){currentMode==="tool"?craftTool():cookFood();}
+/* ======= 모드 ======= */
+function enterToolMode(){ if(gameOver||!started) return; currentMode="tool"; cancelModeBtn.style.display="inline-block"; render(); }
+function enterCookMode(){ if(gameOver||!started) return; currentMode="cook"; cancelModeBtn.style.display="inline-block"; render(); }
+function cancelMode(){ currentMode=null; cancelModeBtn.style.display="none"; document.querySelectorAll(".item-box.selected").forEach(n=>n.classList.remove("selected")); render(); }
+
+/* ======= 시작/재시작 ======= */
+function startPromptShow(){ startPrompt.style.display="flex"; }
+function startGame(){
+  startPrompt.style.display="none";
+  started = true;
+  day = 1;
+  dayDiv.textContent = "오늘은 1일 입니다!";
+  log(`[1일차] 새로운 하루가 시작됩니다.`);
+  setWeather(()=>{ sunnyAutoDry(); });
+  render();
+}
+function cancelStart(){ showCenterMessage("게임을 시작하지 않았습니다.", 1500); }
+function restartGame(){
+  day=1; weather=''; inventory={}; gameOver=false; actionInProgress=false; currentMode=null;
+  hasWetChoco=false; hasPpichu=false; started=false; bonusAction=false;
+  ppichuEligible=false; ppichuEligibleNextTurn=false;
+  logDiv.innerHTML='';
+  dayDiv.textContent="오늘은 1일 입니다!";
+  weatherDiv.textContent="날씨를 결정 중입니다...";
+  document.querySelectorAll("button").forEach(b=>b.disabled=false);
+  render();
+  startPromptShow();
 }
 
-function enterToolMode(){if(gameOver)return;currentMode="tool";selected=[];cancelModeBtn.style.display="inline-block";render();}
-function enterCookMode(){if(gameOver)return;currentMode="cook";selected=[];cancelModeBtn.style.display="inline-block";render();}
-function cancelMode(){currentMode=null;selected=[];cancelModeBtn.style.display="none";render();}
-
-// 날씨 연출
+/* ======= 날씨 ======= */
 function setWeather(cb){
-  showCenterMessage("☀️ 오늘의 날씨는?",1000);
+  showCenterMessage("☀️ 오늘의 날씨는?", 1000);
   setTimeout(()=>{
-    weather=weathers[Math.floor(Math.random()*weathers.length)];
-    const msg=weather.includes("비")?"오늘은 비가 내립니다!":weather.includes("맑음")?"오늘은 날씨가 화창합니다!":"오늘은 날씨가 흐립니다!";
-    document.body.style.backgroundColor=weatherColors[weather];
-    weatherDiv.textContent=msg;log(msg);
-    showCenterMessage(msg,1000);
-    cb&&cb();
-  },1000);
+    weather = weathers[Math.floor(Math.random()*weathers.length)];
+    const msg = weather.includes("비") ? "🌧️ 오늘은 비가 내립니다!"
+              : weather.includes("맑음") ? "☀️ 오늘은 날씨가 화창합니다!"
+              : "☁️ 오늘은 날씨가 흐립니다!";
+    document.body.style.backgroundColor = weatherColors[weather];
+    weatherDiv.textContent = msg; log(msg); showCenterMessage(msg, 1000);
+    cb && cb();
+  }, 1000);
 }
 
+/* ======= 맑은 날 자동 건조 + 노트 팝업 ======= */
+function sunnyAutoDry(){
+  if(!weather.includes("맑음")) return;
+  const wet=[];
+  if(inventory["젖은 초코파이"]) wet.push("젖은 초코파이");
+  if(inventory["젖은 궁극의필기노트"]) wet.push("젖은 궁극의필기노트");
+  if(!wet.length) return;
+  const s=wet[Math.floor(Math.random()*wet.length)];
+  if(s==="젖은 초코파이"){
+    removeItem("젖은 초코파이"); addItem("초코파이");
+    log("🍫 젖은 초코파이를 말렸습니다!"); showCenterMessage("🍫 초코파이를 말렸습니다!",1500);
+  }else{
+    removeItem("젖은 궁극의필기노트"); addItem("궁극의필기노트");
+    log("📘 젖은 궁극의 필기노트를 말렸습니다!"); showCenterMessage("📘 필기노트를 말렸습니다!",1500);
+    showNotePrompt();
+  }
+}
+
+/* ======= 필기노트 팝업 ======= */
+function showNotePrompt(){ if(!inventory["궁극의필기노트"]) return; notePrompt.style.display="flex"; }
+function dismissNotePrompt(){ notePrompt.style.display="none"; }
+function useNoteNow(){
+  if(!inventory["궁극의필기노트"]) return;
+  removeItem("궁극의필기노트");
+  bonusAction = true;
+  log("📘 필기노트를 사용했습니다! 다음 행동은 날짜가 넘어가지 않습니다.");
+  showCenterMessage("📘 필기노트 사용! 추가 행동 1회",1500);
+  dismissNotePrompt();
+}
+
+/* ======= 다음 날 ======= */
 function nextDay(){
+  // 턴 시작 시, '다음 턴부터 가능' 플래그 승격
+  ppichuEligible = ppichuEligibleNextTurn;
+  ppichuEligibleNextTurn = false;
+
   day++;
-  if(day>100)return endGame("100일이 지나 탈출 실패");
-  dayDiv.textContent=`오늘은 ${day}일 입니다!`;
+  if(day>100) return endGame("⏰ 100일이 지나 무인도 탈출에 실패했습니다...");
+  dayDiv.textContent = `오늘은 ${day}일 입니다!`;
   log(`[${day}일차] 새로운 하루가 시작됩니다.`);
-
-  // ☀️ 맑은 날 젖은 아이템 자동 말리기
-  if(weather.includes("맑음")){
-    const wet=[];
-    if(inventory["젖은 초코파이"])wet.push("젖은 초코파이");
-    if(inventory["젖은 궁극의필기노트"])wet.push("젖은 궁극의필기노트");
-    if(wet.length>0){
-      const s=wet[Math.floor(Math.random()*wet.length)];
-      if(s==="젖은 초코파이"){removeItem(s);addItem("초코파이");log("🍫 젖은 초코파이를 말렸습니다!");showCenterMessage("🍫 초코파이를 말렸습니다!",1500);}
-      else {removeItem(s);addItem("궁극의필기노트");log("📘 젖은 궁극의 필기노트를 말렸습니다!");showCenterMessage("📘 필기노트를 말렸습니다!",1500);}
-    }
-  }
-  setWeather();
+  setWeather(()=>{ sunnyAutoDry(); });
 }
 
-function craftTool(){
-  const [a,b]=selected;selected=[];
-  const k1=`${a}+${b}`,k2=`${b}+${a}`;
-  let tool=recipes[k1]||recipes[k2];
-
-  // 💊 해독제 조합 추가
+/* ======= 도구 제작 ======= */
+function craftTool(a,b){
+  // 해독제
   if((a==="초코파이"&&b==="삐쭉삐쭉열매")||(b==="초코파이"&&a==="삐쭉삐쭉열매")){
-    removeItem("초코파이");removeItem("삐쭉삐쭉열매");
-    addItem("해독제");
-    log("✨ 해독제를 만들었습니다!");
-    showCenterMessage("💊 해독제 완성!");
-    endGame("🛶 해독제를 만들어 무인도에서 탈출했습니다!");
-    cancelMode();
-    return;
+    removeItem("초코파이"); removeItem("삐쭉삐쭉열매");
+    addItem("해독제"); log("✨ 해독제를 만들었습니다!"); showCenterMessage("💊 해독제 완성!",2000);
+    endGame("🛶 해독제를 만들어 무인도에서 탈출했습니다!"); cancelMode(); return;
   }
-
-  if(!toolNames.includes(tool)){log("⚒️ 조합 불가");cancelMode();return;}
-  if(inventory[tool]){log(`이미 ${tool} 보유 중!`);cancelMode();return;}
-  removeItem(a);removeItem(b);addItem(tool);
-  showCenterMessage(`🛠️ ${tool} 제작 완료!`);
-  log(`🛠️ ${tool} 제작 완료!`);
+  const result = recipeResult(a,b);
+  if(!result || !isToolResult(result)){ log("⚒️ 조합 불가"); cancelMode(); return; }
+  if(result!=="해독제" && inventory[result]){ log(`이미 ${result} 보유 중!`); cancelMode(); return; }
+  removeItem(a,1); removeItem(b,1); addItem(result);
+  showCenterMessage(`🛠️ ${result} 제작 완료!`,2000); log(`🛠️ ${result} 제작 완료!`);
   cancelMode();
-  setTimeout(nextDay,1000);
+  setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); },1000);
 }
 
-function cookFood(){
-  const [a,b]=selected;selected=[];
-  const k1=`${a}+${b}`,k2=`${b}+${a}`;
-  const dish=recipes[k1]||recipes[k2];
-  if(!dish||toolNames.includes(dish)){log("🍲 요리 불가!");cancelMode();return;}
-  removeItem(a);removeItem(b);addItem(dish);
-  showCenterMessage(`✨ ${dish} 완성!`);
-  log(`✨ ${dish} 완성!`);
+/* ======= 요리 제작 ======= */
+function cookFood(a,b){
+  const dish = recipeResult(a,b);
+  if(!dish || !isDishResult(dish)){ log("🍲 요리 불가!"); cancelMode(); return; }
+  if(a===b){ log("🍲 같은 재료 2개는 사용할 수 없습니다!"); cancelMode(); return; }
+  removeItem(a,1); removeItem(b,1); addItem(dish);
+  showCenterMessage(`✨ ${dish} 완성!`,2000); log(`✨ ${dish} 완성!`);
   cancelMode();
-  setTimeout(nextDay,1000);
+  setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); },1000);
 }
 
+/* ======= 채집 (삐쭉삐쭉열매: 다음 턴부터, 맑은 날만, 20%) ======= */
 function gather(){
-  if(actionInProgress)return;
+  if(!started||gameOver||actionInProgress) return;
   actionInProgress=true;
-  showCenterMessage("🌿 채집중...");
+  showCenterMessage("🌿 채집중...",1000);
   setTimeout(()=>{
-    const pool=["나뭇가지","돌"];
-    if(weather.includes("☀️"))pool.push("벌집");
-    if(weather.includes("비"))pool.push("조개껍데기");
-    if(inventory["돌도끼"])pool.push("코코넛");
-    if(inventory["새총"])pool.push("바나나");
-    if(inventory["버섯칼"])pool.push("버섯");
-    const got=pool[Math.floor(Math.random()*pool.length)];
+    let got;
+    if(weather.includes("비")){
+      const rain=["조개껍데기","젖은 궁극의필기노트","젖은 초코파이"];
+      got=rain[Math.floor(Math.random()*rain.length)];
+      if(got==="젖은 초코파이"){
+        hasWetChoco = true;
+        ppichuEligibleNextTurn = true; // 다음 턴부터 열매 가능
+      }
+    }else{
+      const pool=["나뭇가지","돌"];
+      if(weather.includes("맑음")) pool.push("벌집");
+      if(inventory["돌도끼"]) pool.push("코코넛");
+      if(inventory["새총"])   pool.push("바나나");
+      if(inventory["버섯칼"]) pool.push("버섯");
+      got=pool[Math.floor(Math.random()*pool.length)];
+    }
 
     if(got==="벌집"){
-      log("🐝 벌집이 떨어져 벌에 쏘였습니다! 하루를 쉽니다.");
-      showCenterMessage("🐝 벌집이 떨어졌습니다!");
-      setTimeout(()=>{log("오늘은 하루를 쉽니다.");nextDay();actionInProgress=false;},2000);
-    } else {
-      addItem(got);
-      log(`🍃 ${got} 획득!`);
-      showCenterMessage(`🍃 ${got} 획득!`);
-      
-      // 🌺 젖은 초코파이 이후 삐쭉삐쭉열매 등장
-      if(hasWetChoco && !hasPpichu && Math.random()<0.1){
-        addItem("삐쭉삐쭉열매");
-        hasPpichu=true;
-        log("🌺 삐쭉삐쭉열매를 발견했습니다!");
-        showCenterMessage("🌺 삐쭉삐쭉열매 발견!");
+      log("🐝 벌집이 떨어져 벌에 쏘였습니다! 이번 턴은 쉽니다.");
+      showCenterMessage("🐝 벌집이 떨어졌습니다!",1500);
+      setTimeout(()=>{ log("💤오늘은 하루를 쉽니다."); nextDay(); actionInProgress=false; },1000);
+    }else{
+      addItem(got); log(`🍃 ${got} 획득!`); showCenterMessage(`🍃 ${got} 획득!`,1500);
+
+      // 🔸 삐쭉삐쭉열매: 비 금지, 맑은 날만, 젖초 획득 '다음 턴'부터, 1회만, 20%
+      if(!weather.includes("비") && weather.includes("맑음") && ppichuEligible && !hasPpichu){
+        if(Math.random()<0.20){
+          addItem("삐쭉삐쭉열매"); hasPpichu=true; ppichuEligible=false; // 1회만
+          log("🌺 삐쭉삐쭉열매를 발견했습니다!"); showCenterMessage("🌺 삐쭉삐쭉열매 발견!",1500);
+        }
       }
 
-      setTimeout(()=>{nextDay();actionInProgress=false;},2000);
+      setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); actionInProgress=false; },1000);
     }
   },1000);
 }
 
+/* ======= 낚시 ======= */
 function fish(){
-  if(actionInProgress)return;
+  if(!started||gameOver||actionInProgress) return;
   actionInProgress=true;
-  showCenterMessage("🎣 낚시중...");
+  showCenterMessage("🎣 낚시중...",1000);
   setTimeout(()=>{
     let got;
     if(weather.includes("비")){
       got=Math.random()<0.5?"젖은 초코파이":"젖은 궁극의필기노트";
-      if(got==="젖은 초코파이") hasWetChoco=true;
-    } else if(weather.includes("흐림")) got=Math.random()<0.5?"오징어":"해파리";
-    else {const pool=["줄무늬물고기","점박이물고기","얼룩무늬물고기"];got=pool[Math.floor(Math.random()*pool.length)];}
-    addItem(got);
-    log(`🎣 ${got} 획득!`);
-    showCenterMessage(`🎣 ${got} 획득!`);
-    setTimeout(()=>{nextDay();actionInProgress=false;},2000);
+      if(got==="젖은 초코파이"){
+        hasWetChoco = true;
+        ppichuEligibleNextTurn = true; // 다음 턴부터 열매 가능
+      }
+    }else if(weather.includes("흐림")){
+      got=Math.random()<0.5?"오징어":"해파리";
+    }else{
+      const f=["줄무늬물고기","점박이물고기","얼룩무늬물고기"];
+      got=f[Math.floor(Math.random()*f.length)];
+    }
+    addItem(got); log(`🎣 ${got} 획득!`); showCenterMessage(`🎣 ${got} 획득!`,1500);
+    setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); actionInProgress=false; },1000);
   },1000);
 }
 
-function endGame(msg){log(`<div class='highlight'>${msg}</div>`);gameOver=true;document.querySelectorAll("button").forEach(b=>b.disabled=true);restartBtn.style.display="inline-block";}
-function restartGame(){day=1;weather='';inventory={};gameOver=false;actionInProgress=false;logDiv.innerHTML='';has
+/* ======= 게임 종료 ======= */
+function endGame(msg){
+  log(`<div class='highlight'>${msg}</div>`);
+  gameOver=true;
+  document.querySelectorAll("button").forEach(b=>b.disabled=true);
+  restartBtn.style.display="inline-block";
+}
+
+/* ======= 초기 ======= */
+document.addEventListener("DOMContentLoaded",()=>{ render(); startPromptShow(); });
+</script>
+</body>
+</html>
