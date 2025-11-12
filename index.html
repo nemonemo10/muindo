@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무인도 탈출 시뮬레이션</title>
+<style>
+  body { font-family: "Noto Sans KR", sans-serif; background: #dff9fb; transition: background-color 0.6s ease; text-align: center; padding: 30px; }
+  #log { border: 2px solid #333; border-radius: 10px; background: #fff; height: 350px; width: 760px; margin: 18px auto; padding: 15px; overflow-y: auto; text-align: left; }
+  button { margin: 6px; padding: 10px 18px; border-radius: 8px; border: none; background: #74b9ff; color: #fff; font-size: 16px; cursor: pointer; }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  #weatherDisplay { font-size: 22px; margin-top: 14px; }
+  #centerMessage { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; font-weight: 700; display: none; background: rgba(255,255,255,0.95); padding: 25px 50px; border-radius: 16px; z-index: 999; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
+  .highlight { font-weight: 700; color: #0984e3; }
+  #inventoryWrap { max-width: 760px; margin: 0 auto; }
+  #inventory, #toolsBar, #madeBar { margin-top: 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; transition: opacity 0.3s ease; }
+  .title-chip { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; font-weight: 700; }
+  .item-box { background: #fff; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; user-select: none; cursor: pointer; transition: all .2s ease; opacity: 1; }
+  .item-box.dimmed { opacity: 0.4; }
+  .item-box.selected { outline: 3px solid #ff7675; opacity: 1; font-weight: 700; }
+  #cancelModeBtn { background: #b2bec3; }
+</style>
+</head>
+<body>
+
+<h1>🏝️ 무인도 탈출 시뮬레이션</h1>
+<div id="dayDisplay">오늘은 1일 입니다!</div>
+<div id="weatherDisplay">날씨를 결정 중입니다...</div>
+
+<div id="inventoryWrap">
+  <div id="inventory"><span class="title-chip">🎒 인벤토리:</span></div>
+  <div id="toolsBar"><span class="title-chip">🔧 보유 도구:</span></div>
+  <div id="madeBar"><span class="title-chip">🍽️ 만든 음식:</span></div>
+</div>
+
+<div>
+  <button onclick="gather()">채집</button>
+  <button onclick="fish()">낚시</button>
+</div>
+<div style="margin-top:8px;">
+  <button id="toolBtn" onclick="enterToolMode()">🛠️ 도구 제작</button>
+  <button id="cookBtn" onclick="enterCookMode()">🍳 요리</button>
+  <button id="cancelModeBtn" style="display:none;" onclick="cancelMode()">취소</button>
+</div>
+
+<div id="log"></div>
+<div id="centerMessage"></div>
+<button id="restartBtn" style="display:none;" onclick="restartGame()">🔁 다시하기</button>
+
+<script>
+let day=1, weather='', inventory={}, gameOver=false, actionInProgress=false, currentMode=null, selected=[];
+let hasWetChoco=false, hasPpichu=false;
+
+const weathers=["☀️ 맑음","🌧️ 비","⛅ 흐림"];
+const weatherColors={"☀️ 맑음":"#ffeaa7","🌧️ 비":"#74b9ff","⛅ 흐림":"#b2bec3"};
+const toolNames=["버섯칼","새총","돌도끼"];
+const recipes={
+  "돌+돌":"돌도끼","돌+나뭇가지":"새총","돌+조개껍데기":"버섯칼",
+  "초코파이+삐쭉삐쭉열매":"해독제",
+  "해파리+바나나":"해파리바나나절임","코코넛+바나나":"코코바나볶음","바나나+버섯":"버섯바나나맛탕",
+  "바나나+줄무늬물고기":"줄무늬바나구이","바나나+점박이물고기":"바나나점박이푸딩","바나나+얼룩무늬물고기":"얼룩바나스튜",
+  "코코넛+해파리":"코코해파리숙회","코코넛+버섯":"버섯크림코코넛칩","코코넛+줄무늬물고기":"줄무늬코코조림",
+  "코코넛+점박이물고기":"코코점박이전골","코코넛+얼룩무늬물고기":"코코얼룩무늬구이",
+  "버섯+해파리":"해파리버섯스튜","버섯+줄무늬물고기":"줄무늬버섯볶음","버섯+점박이물고기":"점박이버섯찜",
+  "버섯+얼룩무늬물고기":"얼룩무늬버섯솥밥","해파리+오징어":"해파리오징어냉채","해파리+줄무늬물고기":"해파리줄무늬초무침",
+  "해파리+점박이물고기":"점박이해파리탕","해파리+얼룩무늬물고기":"해파리얼룩무늬전","오징어+바나나":"바나나통오징어",
+  "오징어+코코넛":"코코넛오징어튀김","오징어+버섯":"오징어버섯전","오징어+줄무늬물고기":"줄무늬오징어강정",
+  "오징어+점박이물고기":"오징어점박이꼬치","오징어+얼룩무늬물고기":"얼룩무늬오징어구이",
+  "줄무늬물고기+점박이물고기":"무늬무늬어묵볶음","줄무늬물고기+얼룩무늬물고기":"뮤늬뮤늬생선찜",
+  "점박이물고기+얼룩무늬물고기":"무늬무늬생선탕"
+};
+const logDiv=document.getElementById("log"), invDiv=document.getElementById("inventory"),
+toolsBar=document.getElementById("toolsBar"), madeBar=document.getElementById("madeBar"),
+weatherDiv=document.getElementById("weatherDisplay"), dayDiv=document.getElementById("dayDisplay"),
+cancelModeBtn=document.getElementById("cancelModeBtn"), centerMsg=document.getElementById("centerMessage"),
+restartBtn=document.getElementById("restartBtn");
+
+function log(t){logDiv.innerHTML+=`<div>${t}</div>`;logDiv.scrollTop=logDiv.scrollHeight;}
+function showCenterMessage(t,ms=2000){centerMsg.textContent=t;centerMsg.style.display="block";setTimeout(()=>centerMsg.style.display="none",ms);}
+function addItem(n){inventory[n]=(inventory[n]||0)+1;render();}
+function removeItem(n,c=1){if(!inventory[n])return;inventory[n]-=c;if(inventory[n]<=0)delete inventory[n];render();}
+
+// 렌더링
+function render(){
+  invDiv.innerHTML='<span class="title-chip">🎒 인벤토리:</span>';
+  toolsBar.innerHTML='<span class="title-chip">🔧 보유 도구:</span>';
+  madeBar.innerHTML='<span class="title-chip">🍽️ 만든 음식:</span>';
+
+  toolNames.forEach(t=>{if(inventory[t]){const box=document.createElement("span");box.className="item-box";box.textContent=t;toolsBar.appendChild(box);}});
+  const dishes=Object.keys(inventory).filter(k=>!toolNames.includes(k)&&Object.values(recipes).includes(k));
+  dishes.forEach(k=>{const box=document.createElement("span");box.className="item-box";box.textContent=k;madeBar.appendChild(box);});
+  const normal=Object.keys(inventory).filter(k=>!toolNames.includes(k)&&!Object.values(recipes).includes(k));
+  normal.forEach(k=>{const box=document.createElement("span");box.className="item-box";box.dataset.item=k;box.textContent=inventory[k]>1?`${k} x${inventory[k]}`:k;
+    if(currentMode) box.classList.add("dimmed");
+    box.addEventListener("click",()=>selectItem(k,box));
+    invDiv.appendChild(box);
+  });
+}
+
+function selectItem(item,box){
+  if(!currentMode)return;
+  if(selected.includes(item))return;
+  box.classList.remove("dimmed");box.classList.add("selected");selected.push(item);
+  if(selected.length===2){currentMode==="tool"?craftTool():cookFood();}
+}
+
+function enterToolMode(){if(gameOver)return;currentMode="tool";selected=[];cancelModeBtn.style.display="inline-block";render();}
+function enterCookMode(){if(gameOver)return;currentMode="cook";selected=[];cancelModeBtn.style.display="inline-block";render();}
+function cancelMode(){currentMode=null;selected=[];cancelModeBtn.style.display="none";render();}
+
+// 날씨 연출
+function setWeather(cb){
+  showCenterMessage("☀️ 오늘의 날씨는?",1000);
+  setTimeout(()=>{
+    weather=weathers[Math.floor(Math.random()*weathers.length)];
+    const msg=weather.includes("비")?"오늘은 비가 내립니다!":weather.includes("맑음")?"오늘은 날씨가 화창합니다!":"오늘은 날씨가 흐립니다!";
+    document.body.style.backgroundColor=weatherColors[weather];
+    weatherDiv.textContent=msg;log(msg);
+    showCenterMessage(msg,1000);
+    cb&&cb();
+  },1000);
+}
+
+function nextDay(){
+  day++;
+  if(day>100)return endGame("100일이 지나 탈출 실패");
+  dayDiv.textContent=`오늘은 ${day}일 입니다!`;
+  log(`[${day}일차] 새로운 하루가 시작됩니다.`);
+
+  // ☀️ 맑은 날 젖은 아이템 자동 말리기
+  if(weather.includes("맑음")){
+    const wet=[];
+    if(inventory["젖은 초코파이"])wet.push("젖은 초코파이");
+    if(inventory["젖은 궁극의필기노트"])wet.push("젖은 궁극의필기노트");
+    if(wet.length>0){
+      const s=wet[Math.floor(Math.random()*wet.length)];
+      if(s==="젖은 초코파이"){removeItem(s);addItem("초코파이");log("🍫 젖은 초코파이를 말렸습니다!");showCenterMessage("🍫 초코파이를 말렸습니다!",1500);}
+      else {removeItem(s);addItem("궁극의필기노트");log("📘 젖은 궁극의 필기노트를 말렸습니다!");showCenterMessage("📘 필기노트를 말렸습니다!",1500);}
+    }
+  }
+  setWeather();
+}
+
+function craftTool(){
+  const [a,b]=selected;selected=[];
+  const k1=`${a}+${b}`,k2=`${b}+${a}`;
+  let tool=recipes[k1]||recipes[k2];
+
+  // 💊 해독제 조합 추가
+  if((a==="초코파이"&&b==="삐쭉삐쭉열매")||(b==="초코파이"&&a==="삐쭉삐쭉열매")){
+    removeItem("초코파이");removeItem("삐쭉삐쭉열매");
+    addItem("해독제");
+    log("✨ 해독제를 만들었습니다!");
+    showCenterMessage("💊 해독제 완성!");
+    endGame("🛶 해독제를 만들어 무인도에서 탈출했습니다!");
+    cancelMode();
+    return;
+  }
+
+  if(!toolNames.includes(tool)){log("⚒️ 조합 불가");cancelMode();return;}
+  if(inventory[tool]){log(`이미 ${tool} 보유 중!`);cancelMode();return;}
+  removeItem(a);removeItem(b);addItem(tool);
+  showCenterMessage(`🛠️ ${tool} 제작 완료!`);
+  log(`🛠️ ${tool} 제작 완료!`);
+  cancelMode();
+  setTimeout(nextDay,1000);
+}
+
+function cookFood(){
+  const [a,b]=selected;selected=[];
+  const k1=`${a}+${b}`,k2=`${b}+${a}`;
+  const dish=recipes[k1]||recipes[k2];
+  if(!dish||toolNames.includes(dish)){log("🍲 요리 불가!");cancelMode();return;}
+  removeItem(a);removeItem(b);addItem(dish);
+  showCenterMessage(`✨ ${dish} 완성!`);
+  log(`✨ ${dish} 완성!`);
+  cancelMode();
+  setTimeout(nextDay,1000);
+}
+
+function gather(){
+  if(actionInProgress)return;
+  actionInProgress=true;
+  showCenterMessage("🌿 채집중...");
+  setTimeout(()=>{
+    const pool=["나뭇가지","돌"];
+    if(weather.includes("☀️"))pool.push("벌집");
+    if(weather.includes("비"))pool.push("조개껍데기");
+    if(inventory["돌도끼"])pool.push("코코넛");
+    if(inventory["새총"])pool.push("바나나");
+    if(inventory["버섯칼"])pool.push("버섯");
+    const got=pool[Math.floor(Math.random()*pool.length)];
+
+    if(got==="벌집"){
+      log("🐝 벌집이 떨어져 벌에 쏘였습니다! 하루를 쉽니다.");
+      showCenterMessage("🐝 벌집이 떨어졌습니다!");
+      setTimeout(()=>{log("오늘은 하루를 쉽니다.");nextDay();actionInProgress=false;},2000);
+    } else {
+      addItem(got);
+      log(`🍃 ${got} 획득!`);
+      showCenterMessage(`🍃 ${got} 획득!`);
+      
+      // 🌺 젖은 초코파이 이후 삐쭉삐쭉열매 등장
+      if(hasWetChoco && !hasPpichu && Math.random()<0.1){
+        addItem("삐쭉삐쭉열매");
+        hasPpichu=true;
+        log("🌺 삐쭉삐쭉열매를 발견했습니다!");
+        showCenterMessage("🌺 삐쭉삐쭉열매 발견!");
+      }
+
+      setTimeout(()=>{nextDay();actionInProgress=false;},2000);
+    }
+  },1000);
+}
+
+function fish(){
+  if(actionInProgress)return;
+  actionInProgress=true;
+  showCenterMessage("🎣 낚시중...");
+  setTimeout(()=>{
+    let got;
+    if(weather.includes("비")){
+      got=Math.random()<0.5?"젖은 초코파이":"젖은 궁극의필기노트";
+      if(got==="젖은 초코파이") hasWetChoco=true;
+    } else if(weather.includes("흐림")) got=Math.random()<0.5?"오징어":"해파리";
+    else {const pool=["줄무늬물고기","점박이물고기","얼룩무늬물고기"];got=pool[Math.floor(Math.random()*pool.length)];}
+    addItem(got);
+    log(`🎣 ${got} 획득!`);
+    showCenterMessage(`🎣 ${got} 획득!`);
+    setTimeout(()=>{nextDay();actionInProgress=false;},2000);
+  },1000);
+}
+
+function endGame(msg){log(`<div class='highlight'>${msg}</div>`);gameOver=true;document.querySelectorAll("button").forEach(b=>b.disabled=true);restartBtn.style.display="inline-block";}
+function restartGame(){day=1;weather='';inventory={};gameOver=false;actionInProgress=false;logDiv.innerHTML='';has
