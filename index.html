@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, minimum-scale=1"/>
+<!-- 🔒 레이아웃/글자폭 고정: 가로폭 760px로 고정 -->
+<meta name="viewport" content="width=760, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"/>
 <title>무인도에서 살아남기</title>
 <style>
   /* 🔒 전역 폰트 비율 완전 고정 */
@@ -12,8 +13,11 @@
     -ms-text-size-adjust: none;
     text-size-adjust: none;
   }
+  * { box-sizing: border-box; }
 
   body {
+    width: 760px;           /* 레이아웃 폭 고정 */
+    margin: 0 auto;
     font-family: "Noto Sans KR", sans-serif;
     background: #dff9fb;
     transition: background-color .6s ease;
@@ -21,6 +25,7 @@
     padding: 30px;
     font-size: 16px;
     line-height: 1.4;
+    overflow-x: hidden;
   }
 
   h1 { font-size: 28px; line-height: 1.2; }
@@ -30,13 +35,17 @@
     border-radius: 10px;
     background: #fff;
     height: 350px;
-    width: 760px;
+    width: 760px;      /* 폭 고정 */
+    max-width: 760px;
+    min-width: 760px;
     margin: 18px auto;
     padding: 15px;
     overflow-y: auto;
     text-align: left;
     font-size: 16px;
     line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   button {
@@ -54,12 +63,15 @@
 
   #weatherDisplay { font-size: 22px; margin-top: 14px; }
 
-  /* 💬 중앙 메시지 팝업 */
+  /* 💬 중앙 메시지 팝업 (폭 고정) */
   #centerMessage {
     position: fixed;
     top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 760px;      /* 팝업 폭 고정 */
+    max-width: 760px;
+    min-width: 760px;
     font-size: 32px;
     line-height: 1.3;
     font-weight: 700;
@@ -69,13 +81,23 @@
     border-radius: 16px;
     z-index: 999;
     box-shadow: 0 0 20px rgba(0,0,0,.2);
+    word-wrap: break-word;
   }
 
   .highlight { font-weight: 700; color: #0984e3; }
 
-  #inventoryWrap { max-width: 760px; margin: 0 auto; }
+  /* 인벤토리/도구/음식 바 컨테이너 (폭 고정) */
+  #inventoryWrap {
+    width: 760px;
+    max-width: 760px;
+    min-width: 760px;
+    margin: 0 auto;
+  }
 
   #inventory, #toolsBar, #madeBar {
+    width: 760px;
+    max-width: 760px;
+    min-width: 760px;
     margin-top: 12px;
     display: flex;
     flex-wrap: wrap;
@@ -109,12 +131,15 @@
 
   #cancelModeBtn { background: #b2bec3; }
 
-  /* 💬 모든 팝업 공통 */
+  /* 💬 모든 팝업 공통 (폭 고정) */
   .popup {
     position: fixed;
     top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 760px;    /* 팝업 폭 고정 */
+    max-width: 760px;
+    min-width: 760px;
     background: rgba(255,255,255,.98);
     padding: 30px 50px;
     border-radius: 20px;
@@ -127,11 +152,10 @@
     align-items: center;
     gap: 12px;
     z-index: 1001;
+    word-wrap: break-word;
   }
   .popup .btn-row { display: flex; gap: 10px; }
-  .popup button {
-    font-size: 18px; line-height: 1.2; padding: 8px 20px;
-  }
+  .popup button { font-size: 18px; line-height: 1.2; padding: 8px 20px; }
   .popup small { font-size: 14px; line-height: 1.3; }
 </style>
 </head>
@@ -160,7 +184,7 @@
 <div id="centerMessage"></div>
 
 <!-- 시작 팝업 -->
-<div id="startPrompt" class="popup" style="font-size:26px; line-height:1.4;">
+<div id="startPrompt" class="popup">
   무인도에서 생존하기!<br/>게임을 시작할까요?
   <div class="btn-row">
     <button onclick="startGame()">예</button>
@@ -199,9 +223,9 @@ const toolEmojis={ "돌도끼":"🪓", "새총":"🪃", "버섯칼":"🍄" };
 const recipes={
   // 도구/해독제
   "돌+돌":"돌도끼","돌+나뭇가지":"새총","돌+조개껍데기":"버섯칼",
-  "초코파이+삐죽삐죽열매":"해독제",
+  "초코파이+삐쭉삐쭉열매":"해독제",
   // 요리
-  "해파리+바나나":"해파리바나절임",
+  "해파리+바나나":"해파리바나나절임",
   "코코넛+바나나":"코코바나볶음",
   "바나나+버섯":"버섯바나나맛탕",
   "바나나+줄무늬물고기":"줄무늬바나구이",
@@ -259,13 +283,22 @@ function hasPairFor(item, mode){
   const items = Object.entries(inventory).filter(([k,v])=>v>0).map(([k])=>k);
   if(mode==="tool"){
     const toolPairs = [
-      ["돌","돌"], ["돌","나뭇가지"], ["돌","조개껍데기"], ["초코파이","삐죽삐죽열매"]
+      ["돌","돌"], ["돌","나뭇가지"], ["돌","조개껍데기"], ["초코파이","삐쭉삐쭉열매"]
     ];
     for(const [a,b] of toolPairs){
       if(item!==a && item!==b) continue;
       const hasA = (inventory[a]||0), hasB=(inventory[b]||0);
-      if(a===b){ if(item===a && hasA>=2){ const r=recipeResult(a,b); if(r && (r==="해독제" || !inventory[r])) return true; } }
-      else { if(hasA>0 && hasB>0){ const r=recipeResult(a,b); if(r && (r==="해독제" || !inventory[r])) return true; } }
+      if(a===b){
+        if(item===a && hasA>=2){
+          const r=recipeResult(a,b);
+          if(r && (r==="해독제" || !inventory[r])) return true;
+        }
+      } else {
+        if(hasA>0 && hasB>0){
+          const r=recipeResult(a,b);
+          if(r && (r==="해독제" || !inventory[r])) return true;
+        }
+      }
     }
     return false;
   }
@@ -336,6 +369,16 @@ function render(){
         if(k==="궁극의필기노트"){ showNotePrompt(); }
         return;
       }
+
+      // 같은 재료 2번 선택(돌+돌) 지원: 이미 선택되어 있고 개수가 2 이상이며 도구모드일 때 즉시 처리
+      if(box.classList.contains("selected")){
+        if(currentMode==="tool" && (inventory[k]||0) >= 2 && recipeResult(k,k)){
+          craftTool(k,k);
+          return;
+        }
+        return;
+      }
+
       const selectedEls=[...document.querySelectorAll(".item-box.selected")];
       if(selectedEls.length>=2) return;
       box.classList.remove("dimmed");
@@ -439,8 +482,8 @@ function nextDay(){
 /* ======= 도구 제작 ======= */
 function craftTool(a,b){
   // 해독제
-  if((a==="초코파이"&&b==="삐죽삐죽열매")||(b==="초코파이"&&a==="삐죽삐죽열매")){
-    removeItem("초코파이"); removeItem("삐죽삐죽열매");
+  if((a==="초코파이"&&b==="삐쭉삐쭉열매")||(b==="초코파이"&&a==="삐쭉삐쭉열매")){
+    removeItem("초코파이"); removeItem("삐쭉삐쭉열매");
     addItem("해독제"); log("✨ 해독제를 만들었습니다!"); showCenterMessage("💊 해독제 완성!",2000);
     endGame("🛶 해독제를 만들어 무인도에서 탈출했습니다!"); cancelMode(); return;
   }
@@ -464,7 +507,7 @@ function cookFood(a,b){
   setTimeout(()=>{ if(bonusAction){ bonusAction=false; log("📘 필기노트를 사용해 추가 행동을 했습니다."); } else nextDay(); },1000);
 }
 
-/* ======= 채집 ======= */
+/* ======= 채집 (비=나뭇가지/돌/도구재료, 맑음만 벌집) + 삐쭉 40%) ======= */
 function gather(){
   if(!started||gameOver||actionInProgress) return;
   actionInProgress=true;
@@ -481,7 +524,7 @@ function gather(){
       got = pool[Math.floor(Math.random()*pool.length)];
     }else{
       const pool=["나뭇가지","돌"];
-      if(weather.includes("맑음")) pool.push("벌집");
+      if(weather.includes("맑음")) pool.push("벌집"); // 벌집은 맑은 날에만
       if(inventory["돌도끼"]) pool.push("코코넛");
       if(inventory["새총"])   pool.push("바나나");
       if(inventory["버섯칼"]) pool.push("버섯");
@@ -495,11 +538,11 @@ function gather(){
     }else{
       addItem(got); log(`🍃 ${got} 획득!`); showCenterMessage(`🍃 ${got} 획득!`,1500);
 
-      // 🌺 삐죽삐죽열매: 맑음만, 젖초 획득 '다음 턴'부터, 1회만, ★확률 40%★
+      // 🌺 삐쭉삐쭉열매: 맑음만, 젖초 획득 '다음 턴'부터, 1회만, 확률 40%
       if(!weather.includes("비") && weather.includes("맑음") && ppichuEligible && !hasPpichu){
         if(Math.random()<0.40){
-          addItem("삐죽삐죽열매"); hasPpichu=true; ppichuEligible=false;
-          log("🌺 삐죽삐죽열매를 발견했습니다!"); showCenterMessage("🌺 삐죽삐죽열매 발견!",1500);
+          addItem("삐쭉삐쭉열매"); hasPpichu=true; ppichuEligible=false;
+          log("🌺 삐쭉삐쭉열매를 발견했습니다!"); showCenterMessage("🌺 삐쭉삐쭉열매 발견!",1500);
         }
       }
 
@@ -508,7 +551,7 @@ function gather(){
   },1000);
 }
 
-/* ======= 낚시 (비: 조개30/노트40/젖초30) ======= */
+/* ======= 낚시 (비: 조개30% / 젖노트40% / 젖초코30%) ======= */
 function fish(){
   if(!started||gameOver||actionInProgress) return;
   actionInProgress=true;
