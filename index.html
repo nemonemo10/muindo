@@ -962,7 +962,7 @@
       if (noEventsToday) return { forcedNext:false, usedCenter:false };
 
       // 테스트용: 항상 발생 / 실제 게임은 0.6 등으로 조정 가능
-      if (Math.random() >= 1.00) return { forcedNext:false, usedCenter:false };
+      if (Math.random() >= 0.40) return { forcedNext:false, usedCenter:false };
 
       const candidates = ["헬스남","은보화","최낭만","이순원&숭이","박고고","백곰"];
       const who = candidates[Math.floor(Math.random()*candidates.length)];
