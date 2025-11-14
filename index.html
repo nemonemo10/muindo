@@ -516,7 +516,7 @@
       characterCutTimer = null;
     }
 
-    // ★ 이미지 뜨는 순간 중앙메시지 강제 숨김
+    // 이미지 뜨는 순간 중앙메시지 강제 숨김
     if (centerHideTimer) {
       clearTimeout(centerHideTimer);
       centerHideTimer = null;
@@ -974,6 +974,7 @@
       if (noEventsToday) return { forcedNext:false, usedCenter:false };
 
       // 테스트용: 항상 발생 / 실제 게임은 0.6 등으로 조정 가능
+      
       if (Math.random() >= 0.40) return { forcedNext:false, usedCenter:false };
 
       const candidates = ["헬스남","은보화","최낭만","이순원&숭이","박고고","백곰"];
@@ -983,12 +984,13 @@
       noEventsToday = true;
 
       return resolveCharacterEvent(who);
+    
     }
 
     function resolveCharacterEvent(name){
       let usedCenter = false;
 
-      // 🎭 공통: 캐릭터 조우 안내 문구
+      // 🎭 공통: 캐릭터 만남 안내 문구
       showCenterMessage(`🎭 ${withJosa(name,"을/를")} 만났다!`, CHARACTHER_MSG_MS);
       usedCenter = true;
 
@@ -1034,7 +1036,7 @@
             return { forcedNext:false, usedCenter };
           }
 
-          // 오징어요리가 부족하면 → 발목 삐고 오늘 하루 스킵
+          // 오징어요리가 부족하면 → 발걸고 오늘 하루 스킵
           setTimeout(()=>{
             log("💪 헬스남: ....우우우우!!!! (단백질이 부족해진 헬스남이 발을 걸었다...)");
             showCharacterCut(
