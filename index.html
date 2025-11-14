@@ -888,7 +888,7 @@
         showCenterMessage("🍫 젖은 초코파이를 말렸습니다!");
         // 말린 초코파이 이미지
         showCharacterCut(
-          "img/초코맛파이.jpg",
+          "img/초코맛파이.JPG",
           "🍫 초코파이를 말렸다!",
           2200
         );
@@ -899,7 +899,7 @@
         showCenterMessage("📘 젖은 궁극의 필기노트를 말렸습니다!");
         // 말린 궁필노 이미지
         showCharacterCut(
-          "img/궁필노.jpg",
+          "img/궁필노.JPG",
           "📘 필기노트를 말렸다!",
           2200
         );
@@ -1336,9 +1336,9 @@
 
       // 도구 이미지 노출
       let toolImg = null;
-      if(result === "조개칼") toolImg = "조개칼.jpg";
-      else if(result === "돌도끼") toolImg = "돌도끼.jpg";
-      else if(result === "새총")   toolImg = "새총.jpg";
+      if(result === "조개칼") toolImg = "조개칼.JPG";
+      else if(result === "돌도끼") toolImg = "돌도끼.JPG";
+      else if(result === "새총")   toolImg = "새총.JPG";
 
       if(toolImg){
         showCharacterCut(
@@ -1379,7 +1379,7 @@
       log(`✨ ${dish} 완성!`);
 
       showCharacterCut(
-        `img/${dish}.jpg`,
+        `img/${dish}.JPG`,
         `✨ ${dish} 완성!`,
         2600
       );
@@ -1458,7 +1458,7 @@
             log(`🍃 ${got} 획득!`);
 
             if (toolMaterials.has(got) || cookIngredients.has(got)) {
-              showCharacterCut(`img/${got}.jpg`, `${got} 획득!`, 2200);
+              showCharacterCut(`img/${got}.JPG`, `${got} 획득!`, 2200);
             } else {
               showCenterMessage(`🍃 ${got} 획득!`,1200);
             }
@@ -1474,7 +1474,7 @@
                 hasPpichu = true;
                 ppichuEligible = false;
                 log("🌺 삐죽삐죽열매를 발견했습니다!");
-                showCharacterCut("img/삐죽삐죽열매.jpg","삐죽삐죽열매 발견!",2200);
+                showCharacterCut("img/삐죽삐죽열매.JPG","삐죽삐죽열매 발견!",2200);
               }
             }
 
@@ -1531,18 +1531,18 @@
 
           if (got === "젖은 초코파이"){
             showCharacterCut(
-              "img/초코파이.jpg",
+              "img/초코파이.JPG",
               "🎣 젖은 초코파이를 건졌다!",
               2200
             );
           }else if (got === "젖은 궁극의필기노트"){
             showCharacterCut(
-              "img/젖은궁필노.jpg",
+              "img/젖은궁필노.JPG",
               "🎣 젖은 필기노트를 건졌다!",
               2200
             );
           }else if (toolMaterials.has(got) || cookIngredients.has(got)) {
-            showCharacterCut(`img/${got}.jpg`, `${got} 획득!`, 2200);
+            showCharacterCut(`img/${got}.JPG`, `${got} 획득!`, 2200);
           } else {
             showCenterMessage(`🎣 ${got} 획득!`,1500);
           }
