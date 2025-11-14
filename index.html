@@ -510,21 +510,33 @@
       }, ms);
     }
 
-    function showCharacterCut(imgSrc, text, ms = 2000){
-      if (characterCutTimer){
-        clearTimeout(characterCutTimer);
-        characterCutTimer = null;
-      }
-      characterCutImg.src = imgSrc;
-      characterCutText.textContent = text;
-      characterCut.style.display = "flex";
-
-      characterCutTimer = setTimeout(()=>{
-        characterCut.style.display = "none";
-        characterCutTimer = null;
-        centerMsg.classList.remove("with-image");
-      }, ms);
+  function showCharacterCut(imgSrc, text, ms = 2000, after){
+    if (characterCutTimer){
+      clearTimeout(characterCutTimer);
+      characterCutTimer = null;
     }
+
+    // ★ 이미지 뜨는 순간 중앙메시지 강제 숨김
+    if (centerHideTimer) {
+      clearTimeout(centerHideTimer);
+      centerHideTimer = null;
+    }
+    centerMsg.style.display = "none";
+
+    characterCutImg.src = imgSrc;
+    characterCutText.textContent = text;
+    characterCut.style.display = "flex";
+
+    characterCutTimer = setTimeout(()=>{
+      characterCut.style.display = "none";
+      characterCutTimer = null;
+      centerMsg.classList.remove("with-image");
+
+      if (typeof after === "function") {
+        after();
+      }
+    }, ms);
+  }
 
     function hasBatchim(word){
       if (!word || typeof word !== "string") return false;
@@ -1060,18 +1072,22 @@
               log(`👑 은보화: ${playerName}! 미식회인데 음식은 가지고 왔겠지? 어서 음식을 내게 설명해봐.`);
               showCharacterCut(
                 "img/미식회성공한보화.png",
-                "👑 은보화: 훌륭한 음식이야!",
-                3000
+                "👑 은보화: 뭐, 나쁘지 않은 음식이야. 다음엔 음식설명을 좀 더 연습하도록해.",
+                3000,
+                () => {
+                  showCenterMessage(`👑 은보화에게 ${withJosa(taken,"을/를")} 줬다...`, 2500);
+                }
               );
-              showCenterMessage(`👑 은보화에게 ${withJosa(taken,"을/를")} 줬다...`, 2500);
             }else{
               log(`👑 은보화: ${playerName}!! 미식회에 음식을 가지고 오지 않다니! 백곰!! 당장 쫓아내!`);
               showCharacterCut(
                 "img/미식회실패보화.png",
-                "👑 은보화: 실망이야!",
-                3000
+                "👑 은보화: 백곰! 쫓아내!!",
+                3000,
+                () => {
+                  showCenterMessage("👑 은보화에게 줄 음식이 없어 쫓겨났다...",2500);
+                }
               );
-              showCenterMessage("👑 은보화에게 줄 음식이 없어 쫓겨났다...",2500);
             }
           }, afterMeetDelay);
 
@@ -1088,18 +1104,22 @@
               showCharacterCut(
                 "img/정신교육백곰.png",
                 "🐻 백곰의 정신교육을 받았다!",
-                3000
+                3000,
+                () => {
+                  showCenterMessage("🐻 백곰이 벌을 피하는 법을 알려줬다! <br/> 이제 벌집이 무섭지 않다!",2500);
+                }
               );
-              showCenterMessage("🐻 백곰이 벌을 피하는 법을 알려줬다! <br/> 이제 벌집이 무섭지 않다!",2500);
             } else {
               const dish = addRandomDish();
               log(`🐻 백곰: 벌에게 쫄지 않고 잘 대처하고 계신 것 같군요. 좋습니다. 그럼 아가씨가 불러서 이만.<br/> <b>어라라 백곰이 떠난자리에 ${withJosa(dish,"이/가")}?</b>`);
               showCharacterCut(
                 "img/교육끝난백곰.png",
                 `🐻 백곰이 ${withJosa(dish,"을/를")} 떨어뜨리고 갔다!`,
-                3000
+                3000,
+                () => {
+                  showCenterMessage(`🐻 백곰이 떨어뜨리고 간 ${withJosa(dish,"을/를")} 주웠다!`,2500);
+                }
               );
-              showCenterMessage(`🐻 백곰이 떨어뜨리고 간 ${withJosa(dish,"을/를")} 주웠다!`,2500);
             }
           }, afterMeetDelay);
 
@@ -1127,20 +1147,24 @@
               showCharacterCut(
                 "img/노래하는낭만.png",
                 "🎤 최낭만의 라이브 공연!",
-                3000
-              );
-              showCenterMessage(
-                `🎤 최낭만의 노래! 관람료로 ${withJosa(taken,"을/를")} 내주었다...`,
-                2500
+                3000,
+                () => {
+                  showCenterMessage(
+                    `🎤 최낭만의 노래! 관람료로 ${withJosa(taken,"을/를")} 내주었다...`,
+                    2500
+                  );
+                }
               );
             }else{
               log("🎤 최낭만: 요리가 없다고? <br/><b> 괜찮아... 관객에게 외면받는 게 이번 처음은 아니니까... 나는 갈게...</b>");
               showCharacterCut(
                 "img/떠나는낭만.png",
                 "🎤 최낭만은 쓸쓸히 떠났다...",
-                3000
+                3000,
+                () => {
+                showCenterMessage("🎤 최낭만의 노래는 다음 기회에...",2500);
+                }
               );
-              showCenterMessage("🎤 최낭만의 노래는 다음 기회에...",2500);
             }
           }, afterMeetDelay);
 
@@ -1155,9 +1179,11 @@
             showCharacterCut(
               "img/요리주는숭이.png",
               `🙈 숭이가 ${withJosa(dish,"을/를")} 건네줬다!`,
-              3000
+              3000,
+              () => {
+                showCenterMessage(`🙈 이순원&숭이: 숭이의 자비로 ${withJosa(dish,"을/를")} 받았다!`,2500);
+              }
             );
-            showCenterMessage(`🙈 이순원&숭이: 숭이의 자비로 ${withJosa(dish,"을/를")} 받았다!`,2500);
           }, afterMeetDelay);
 
           usedCenter = true;
@@ -1173,46 +1199,50 @@
               // 도구 선물
               log(`🏺 박고고: ${playerName}!! 드디어 고고학에 관심이 생긴거야?! 내 ${withJosa(tool,"을/를")} 나눠줄게!!`);
               showCharacterCut(
-                "img/도구주는고고.png",
-                `🏺 박고고가 ${withJosa(tool,"을/를")} 건네줬다!`,
-                3000
-              );
-              showCenterMessage(`🏺 박고고에게 ${withJosa(tool,"을/를")} 받았다!`,2500);
-              usedCenter = true;
-              return;
+              "img/도구주는고고.png",
+              `🏺 박고고가 ${withJosa(tool,"을/를")} 건네줬다!`,
+              3000,
+              () => {
+                showCenterMessage(`🏺 박고고에게 ${withJosa(tool,"을/를")} 받았다!`,2500);
             }
+          );
+          usedCenter = true;
+          return;
+        }
 
-            const talkAboutIsland = Math.random() < 0.5;
+          const talkAboutIsland = Math.random() < 0.5;
 
-            if (talkAboutIsland) {
-              // 위로 + 내일 버프
-              log(
-                `🏺 박고고: ${playerName}!! 이미 모든 도구를 갖고 있네! <br/> ` +
-                `그렇다면 지금까지 내가 섬에 대해 조사한 내용을 들어볼래?!`
-              );
-              showCharacterCut(
-                "img/고고학얘기하는고고.png",
-                "🏺 박고고의 장대한 섬 이야기!",
-                3000
-              );
+        if (talkAboutIsland) {
+          // 위로 + 내일 버프
+          log(
+            `🏺 박고고: ${playerName}!! 이미 모든 도구를 갖고 있네! <br/> ` +
+            `그렇다면 지금까지 내가 섬에 대해 조사한 내용을 들어볼래?!`
+          );
+          showCharacterCut(
+            "img/고고학얘기하는고고.png",
+            "🏺 박고고의 장대한 섬 이야기!",
+            3000,
+            () => {
               showCenterMessage(
                 "🏺 박고고는 내 말을 듣지 않은 채 일장연설을 이어갔다. 힘들긴 하지만 뭔가 위로가 된 것 같다!",
                 2500
               );
+            }
+          );
 
-              goGoBuffNext = 2; // 내일 추가 행동 2회
-              usedCenter = true;
-            } else {
-              // 하루 종료
-              log(
-                `🏺 박고고: ${playerName}!! 이미 모든 도구를 갖고 있네! <br/> ` +
-                `그렇다면 함께 고고학에 대해 얘기해볼래?!`
-              );
-              showCharacterCut(
-                "img/고고학얘기하는고고.png",
-                "🏺 끝없는 고고학 사랑 이야기...",
-                3000
-              );
+          goGoBuffNext = 2; // 내일 추가 행동 2회
+          usedCenter = true;
+        } else {
+          // 하루 종료
+          log(
+            `🏺 박고고: ${playerName}!! 이미 모든 도구를 갖고 있네! <br/> ` +
+            `그렇다면 함께 고고학에 대해 얘기해볼래?!`
+          );
+          showCharacterCut(
+            "img/고고학얘기하는고고.png",
+            "🏺 끝없는 고고학 사랑 이야기...",
+            3000,
+            () => {
               showCenterMessage(
                 "🏺 박고고의 고고학 사랑에 대한 일장연설을 들었다... <br/> 점점 정신이 멍해지고 기력이 쭉 빠져버렸다.",
                 2500
@@ -1222,15 +1252,17 @@
                 log("💤 박고고의 끝없는 고고학 이야기 때문에 기력이 떨어졌다. 오늘은 더 이상 움직일 수 없을 것 같다.");
                 nextDay();
               }, 2500);
-
-              usedCenter = true;
-              return;
             }
-          }, afterMeetDelay);
+          );
 
-          return { forcedNext:false, usedCenter };
+          usedCenter = true;
+          return;
         }
-      }
+      }, afterMeetDelay);
+
+      return { forcedNext:false, usedCenter };
+     }
+    }
 
       // 안전장치
       return { forcedNext:false, usedCenter };
